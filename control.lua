@@ -65,15 +65,20 @@ function approx_color4(color1, color2, weight)
     g = color1.g * weight + color2.g * (1 - weight)
     b = color1.b * weight + color2.b * (1 - weight)
     a = color1.a * weight + color2.a * (1 - weight)
+  
     return {r, g, b, a}
 end
 
+function approx_color4_255(color1, color2, weight)	
+    r = color1.r * weight + color2.r * (1 - weight)
+    g = color1.g * weight + color2.g * (1 - weight)
+    b = color1.b * weight + color2.b * (1 - weight)
+    a = color1.a * weight + color2.a * (1 - weight)	
+	  return {r/255, g/255, b/255, a/255}
+end
 
-function approx_color3 (color1,color2,weight)
-	r=color1.r*weight+color2.r*(1-weight)
-	g=color1.g*weight+color2.g*(1-weight)
-	b=color1.b*weight+color2.b*(1-weight)
-	return {r,g	,b}
+function color_4_to_3(color_in)
+	return {color_in[1],color_in[2],color_in[3]}
 end
 
 function log_file(text_to_Log) game.write_file("atomicHeat-monitor.txt", text_to_Log .. "\r\n", true) end
@@ -94,18 +99,55 @@ function draw_heat_amount_for_entity(heat_entity)
 
 end
 
+function calc_color_from_palette_and_temperature (heat_palette_ranges,temperature)
+
+	calc_color = {r=0,g=0,b=0,a=0}
+	start_temp=0
+	end_temp=1000
+	target_range=heat_palette_ranges[1]	
+	for _,range_color in pairs (heat_palette_ranges) do				
+		if temperature<=range_color.range then 
+			end_temp=range_color.range
+			target_range=range_color			
+			break 
+		else
+			start_temp=range_color.range
+		end
+	end
+	
+	calc_color = approx_color4_255(target_range.high,target_range.low , (temperature-start_temp)/(end_temp-start_temp) )
+	return calc_color
+end
+
 function update_heat_rect(heat_entity, temperature)
-    if temperature < 500 then
-        draw_params_rect.color = approx_color4(awhite, ablue, temperature / 500)
-    else
-        draw_params_rect.color = approx_color4(awhite, ared, (1000 - temperature) / 500)
-    end
+	if heat_palette.b_need_rects==false then  return end
+	--защита от неудачного расчёта температуры
+	draw_params_rect.color = {r=0,g=0,b=0,a=0}
+	start_temp=0
+	end_temp=1000
+	
+	draw_params_rect.color =calc_color_from_palette_and_temperature(heat_palette.ranges_rects,temperature)
+	--target_range=heat_palette.ranges_rects[1]
+	-- for _,range_color in pairs (heat_palette.ranges_rects) do		
+		-- if temperature< range_color.range then 
+			-- end_temp=range_color.range
+			-- target_range=range_color			
+			-- break 
+		-- else
+			-- start_temp=range_color.range
+		-- end
+	-- end
+	-- draw_params_rect.color = approx_color4_255(target_range.high,target_range.low , (temperature-start_temp)/(end_temp-start_temp) )
+    --if temperature < 500 then
+    --    draw_params_rect.color = approx_color4(awhite, ablue, temperature / 500)
+    --else
+    --   draw_params_rect.color = approx_color4(awhite, ared, (1000 - temperature) / 500)
+    --end
 
     if arr_ent.arr_box["" .. heat_entity.unit_number] == nil then
         draw_params_rect.left_top = heat_entity.selection_box.left_top
         draw_params_rect.right_bottom = heat_entity.selection_box.right_bottom
-        arr_ent.arr_box["" .. heat_entity.unit_number] = rendering.draw_rectangle(draw_params_rect)
-        log("new rect")
+        arr_ent.arr_box["" .. heat_entity.unit_number] = rendering.draw_rectangle(draw_params_rect)        
     else
         id = arr_ent.arr_box["" .. heat_entity.unit_number]
         if rendering.is_valid(id) then
@@ -118,18 +160,23 @@ function update_heat_rect(heat_entity, temperature)
 end
 
 function update_heat_text(heat_entity, temperature)
-    if temperature < 250 then
-        draw_params.color = red
-    elseif temperature < 500 then
-        draw_params.color = yellow
-    else
-        draw_params.color = green
-    end
+	if heat_palette.b_need_numbers==false then return end 
+	start_temp=0
+	end_temp=1000
+	
+	 draw_params.color =color_4_to_3(calc_color_from_palette_and_temperature(heat_palette.ranges_numbers,temperature))	
+	      -- if temperature < 250 then
+         -- draw_params.color = red
+     -- elseif temperature < 500 then
+        -- draw_params.color = yellow
+     -- else
+        -- draw_params.color = green
+     -- end
+	
 
     if arr_ent.arr_text["" .. heat_entity.unit_number] == nil then
         draw_params.text = temperature
-        arr_ent.arr_text["" .. heat_entity.unit_number] = rendering.draw_text(draw_params)
-        log("new text")
+        arr_ent.arr_text["" .. heat_entity.unit_number] = rendering.draw_text(draw_params)      
     else
         id = arr_ent.arr_text["" .. heat_entity.unit_number]
         if rendering.is_valid(id) then
@@ -156,18 +203,18 @@ script.on_nth_tick(60, function(e)
         -- update_heat_enities_near_player(player) --- todo откоментить
         update_heat_selector__heat_groups__entities(player)
     end
+	heat_palette_export()
 end)
 
 function update_heat_enities_near_player(player)
     i = 0
     for _, heat_entity in pairs(find_heat_entity_near_player(player)) do
-        log(heat_entity.temperature .. " i=" .. i .. " " .. heat_entity.name .. " id=" .. heat_entity.unit_number ..
-                "\r\n")
+        --log(heat_entity.temperature .. " i=" .. i .. " " .. heat_entity.name .. " id=" .. heat_entity.unit_number ..                 "\r\n")
         draw_heat_amount_for_entity(heat_entity)
         i = i + 1
     end
-    log("box =" .. count_table_elements(arr_ent.arr_box) .. "\r\n")
-    log("text=" .. count_table_elements(arr_ent.arr_text) .. "\r\n")
+    --log("box =" .. count_table_elements(arr_ent.arr_box) .. "\r\n")
+    --log("text=" .. count_table_elements(arr_ent.arr_text) .. "\r\n")
 
     -- l=1
 

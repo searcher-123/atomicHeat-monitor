@@ -32,6 +32,39 @@ heat_selector_singlton = {
     }
 }
 
+heat_palette= {
+ b_need_numbers=true,
+ b_need_rects=false,
+ ranges_numbers={
+	{range=250,low={r=255,g=0,b=0,a=0},high={r=255,g=0,b=0,a=1}},
+	{range=500,low={r=255,g=255,b=0,a=0.5},high={r=255,g=255,b=0,a=0.5}},
+	{range=1000,low={r=0,g=250,b=0,a=1},high={r=0,g=250,b=0,a=1}}
+},
+ranges_rects={
+	{range=500,low={r=0,g=0,b=255,a=0.2},high={r=200,g=200,b=200,a=0.1}},
+	{range=1000,low={r=230,g=230,b=230,a=0.1},high={r=255,g=0,b=0,a=0.2}}
+}
+}
+
+function heat_palette_export () 
+	simple_export ('exported-palette.json',heat_palette)
+	--game.write_file('exported-palette.json',table_to_json(table_name))
+end
+function simple_export (file_name,table_name)
+	
+	game.write_file(file_name,game.table_to_json(table_name))
+end
+function heat_palette_export () 
+	simple_export ('exported-palette.json',heat_palette)
+	--game.write_file('exported-palette.json',table_to_json(table_name))
+end
+function simple_import (file_name,table_name)
+	
+	game.write_file(file_name,game.table_to_json(table_name))
+end
+
+
+
 function heat_selector_singlton.get_group_by_player_index(player_index) end
 
 --- heat_group : table
