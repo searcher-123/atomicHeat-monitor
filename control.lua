@@ -1,3 +1,15 @@
+Stats = require("heat_palettes")
+
+function set_palette ()
+--uncomment one of next lines to change palette style
+--bambino()
+--baggins()
+FaXiR()
+--palette_just_rects()
+--palette_just_green_digits()
+end
+
+
 local heat_selector = require("heat_selector").heat_selector
 -- local selector_func = require("heat_selector").selector
 
@@ -92,8 +104,7 @@ function draw_heat_amount_for_entity(heat_entity)
     draw_params.forces[1] = heat_entity.force
     draw_params.color = green
 
-    draw_params_rect.surface = heat_entity.surface
-
+    draw_params_rect.surface = heat_entity.surface	
     update_heat_rect(heat_entity, temperature)
     update_heat_text(heat_entity, temperature)
 
@@ -199,11 +210,12 @@ function find_heat_entity_near_player(player)
 end
 
 script.on_nth_tick(60, function(e)
+	set_palette ()--костыль .перенести в однократный пуск
     for _, player in pairs(game.connected_players) do
         -- update_heat_enities_near_player(player) --- todo откоментить
         update_heat_selector__heat_groups__entities(player)
     end
-	heat_palette_export()
+	--heat_palette_export()
 end)
 
 function update_heat_enities_near_player(player)
