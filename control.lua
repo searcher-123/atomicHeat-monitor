@@ -65,14 +65,15 @@ function approx_color4(color1, color2, weight)
     g = color1.g * weight + color2.g * (1 - weight)
     b = color1.b * weight + color2.b * (1 - weight)
     a = color1.a * weight + color2.a * (1 - weight)
-    -- log("color4 ")
-    -- log("color1 " .. "." .. color1.r .. "," .. color1.g .. "," .. color1.b ..
-    -- "," .. a)
-    -- log("color2 " .. "." .. color2.r .. "," .. color2.g .. "," .. color2.b ..
-    -- "," .. a)
-    -- log("color and num " .. weight .. ", " .. r .. ", " .. g .. ", " .. b ..
-    -- ", " .. a)
     return {r, g, b, a}
+end
+
+
+function approx_color3 (color1,color2,weight)
+	r=color1.r*weight+color2.r*(1-weight)
+	g=color1.g*weight+color2.g*(1-weight)
+	b=color1.b*weight+color2.b*(1-weight)
+	return {r,g	,b}
 end
 
 function log_file(text_to_Log) game.write_file("atomicHeat-monitor.txt", text_to_Log .. "\r\n", true) end
