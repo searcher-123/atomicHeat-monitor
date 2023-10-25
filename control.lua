@@ -78,6 +78,7 @@ end
 function log_file(text_to_Log) game.write_file("atomicHeat-monitor.txt", text_to_Log .. "\r\n", true) end
 
 function draw_heat_amount_for_entity(heat_entity)
+    if heat_entity.valid == false then return end
     local temperature = math.floor(heat_entity.temperature)
 
     draw_params.target = heat_entity
