@@ -1,5 +1,5 @@
 local heat_selector = require("heat_selector").heat_selector
--- local selector_func = require("heat_selector").selector
+local gui = require("gui")
 
 local red, yellow, green = {1, 0, 0}, {1, 1, 0}, {0, 1, 0}
 
@@ -60,7 +60,7 @@ local draw_params_rect = {
     }
 }
 
-function approx_color4(color1, color2, weight)
+function approx_color(color1, color2, weight)
     r = color1.r * weight + color2.r * (1 - weight)
     g = color1.g * weight + color2.g * (1 - weight)
     b = color1.b * weight + color2.b * (1 - weight)
@@ -78,7 +78,8 @@ end
 function log_file(text_to_Log) game.write_file("atomicHeat-monitor.txt", text_to_Log .. "\r\n", true) end
 
 function draw_heat_amount_for_entity(heat_entity)
-    if heat_entity.valid == false then return end
+    if heat_entity.valid == false or heat_entity.temperature == nil -- кейс в выборке есть Бойлеры и реакторы, но у них нет работы с теплом, как у Атомок
+    then return end
     local temperature = math.floor(heat_entity.temperature)
 
     draw_params.target = heat_entity
@@ -88,16 +89,16 @@ function draw_heat_amount_for_entity(heat_entity)
 
     draw_params_rect.surface = heat_entity.surface
 
-    update_heat_rect(heat_entity, temperature)
+    new_heat_box(heat_entity, temperature)
     update_heat_text(heat_entity, temperature)
 
 end
 
-function update_heat_rect(heat_entity, temperature)
+function new_heat_box(heat_entity, temperature)
     if temperature < 500 then
-        draw_params_rect.color = approx_color4(awhite, ablue, temperature / 500)
+        draw_params_rect.color = approx_color(awhite, ablue, temperature / 500)
     else
-        draw_params_rect.color = approx_color4(awhite, ared, (1000 - temperature) / 500)
+        draw_params_rect.color = approx_color(awhite, ared, (1000 - temperature) / 500)
     end
 
     if arr_ent.arr_box["" .. heat_entity.unit_number] == nil then
@@ -181,9 +182,7 @@ function update_heat_selector__heat_groups__entities(player)
     -- если у Игрока ещё нет выделенных групп, то и обрабатывать ничего не нужно
     if heat_groups == nil then return end
     for _, heat_group in pairs(heat_groups) do
-        for _, heat_entity in pairs(heat_group.entities) do 
-            draw_heat_amount_for_entity(heat_entity) 
-        end
+        for _, heat_entity in pairs(heat_group.entities) do draw_heat_amount_for_entity(heat_entity) end
     end
     -- for heat_entity in heat_group_entities do draw_heat_amount_for_entity(heat_entity) end
     -- for heat_entity in heat_selector[player.index].entities do draw_heat_amount_for_entity(heat_entity) end
@@ -197,3 +196,72 @@ function count_table_elements(table)
     return size
 end
 
+
+-- script.on_configuration_changed(function()
+    
+--     for _, player in pairs(game.players) do
+--         -- conf.initialize_global(player.index)
+--         -- gui.create_interface(player)
+--         gui.create_buttons(player)
+--     end
+--     log("on_configuration_changed\r\n")
+-- end)
+
+script.on_init(function()
+
+    for _, player in pairs(game.players) do
+        gui.create_interface(player)
+        -- gui.create_buttons(player)
+    end
+    
+end)
+-- script.on_load(function()
+    -- log("control gui init\r\n")
+    -- global.players = {}
+    -- ---@type State[]
+    -- global.tasks = {}
+    -- conf.initialize_deconstruction_filter()
+
+    -- for _, player in pairs(game.players) do
+        -- conf.initialize_global(player.index)
+        -- gui.create_interface(player)
+        -- gui.create_buttons(player)
+    -- end
+-- end)
+
+function gui.create_buttons(player)
+    local root = player.gui.top.pomogatel_temperature_root
+    if root then root.destroy() end
+
+    --    if not root or destroyed then
+    root = player.gui.top.add {
+        type = "frame",
+        name = "pomogatel_temperature_root",
+        direction = "horizontal"
+        -- direction = "vertical"
+        -- ,		column_count=2
+    }
+
+    local action_buttons = root.add {
+        type = "flow",
+        name = "pomogatel_temperature_action_buttons",
+        direction = "vertical"
+    }
+    action_buttons.add {
+        type = "button",
+        name = "pomogatel_temperature_start_button",
+        caption = "start"
+    }
+    action_buttons.add {
+        type = "button",
+        name = "pomogatel_temperature_stop_button",
+        caption = "stop"
+    }
+    action_buttons.add {
+        type = "button",
+        name = "pomogatel_temperature_init",
+        caption = "init"
+    }
+
+    --    end
+end
