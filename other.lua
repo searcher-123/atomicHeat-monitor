@@ -32,4 +32,4 @@ function Array:get(array_name)
     end
 end
 
-return Gui
+return PlayerGui

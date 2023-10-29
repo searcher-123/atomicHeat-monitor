@@ -1,103 +1,114 @@
-Gui = {
+PlayerGui = {
     root = nil, --- :LuaGuiElement @lateint
     toolbar = nil, --- :LuaGuiElement @lateint
     heat_group_container = nil, --- :LuaGuiElement @lateinit
     button_action_register = {} --- :Table<button_name : string, do_on_ress : function(event) -> Unit>
 }
 
--- script.on_init(function()
---     log("gui init\r\n")
--- 	-- global.players = {}
--- 	-- ---@type State[]
--- 	-- global.tasks = {}
--- 	-- conf.initialize_deconstruction_filter()
-
--- 	for _, player in pairs(game.players) do
--- 		-- conf.initialize_global(player.index)
---         gui.create_interface(player)
--- 	end
--- end)
+-- todo replcae PlayerGui:new()
 --- https://lua-api.factorio.com/latest/concepts.html#GuiElementType
-function Gui.create_interface(player)
+function PlayerGui.create_interface(player)
     ---@type LuaGuiElement
     -- local root_frame = player.gui.screen.add {
-    Gui.root = player.gui.screen.add {
+    PlayerGui.root = player.gui.screen.add {
         type = "frame",
         name = "ahm__root__frame",
         direction = "vertical",
         caption = "atomic heat monitor",
         children = {}
     }
-    Gui.heat_group_container = Gui.root.add {
+    PlayerGui.heat_group_container = PlayerGui.root.add {
         type = "scroll-pane",
         -- type = "table",
         -- column_count = "1",
         name = "ahm__heat_group_container__scroll-pane",
         direction = "vertical"
     }
-    Gui.init_toolbar()
+    PlayerGui.init_toolbar()
     -- HeatGroupDispetcher.addGroup(Gui.heat_group_container)
     -- HeatGroupDispetcher.addGroup(Gui.heat_group_container)
 end
 
-function Gui.init_toolbar()
-    Gui.toolbar = Gui.root.add {
+function PlayerGui.init_toolbar()
+    PlayerGui.toolbar = PlayerGui.root.add {
         type = "scroll-pane",
         name = "ahm__toolbar",
         direction = "horizontal"
     }
-    local create_new_group_btn = Gui.toolbar.add {
+    local create_new_group_btn = PlayerGui.toolbar.add {
         type = "sprite-button",
         name = "ahm__create_new_group_button",
         sprite = "heat_group_add_blueprint_icon",
         tooltip = "Создать группу" -- todo local text resource
     }
-    Gui.button_action_register[create_new_group_btn.name] = Gui.set_selector_create_group
+    PlayerGui.button_action_register[create_new_group_btn.name] = PlayerGui.set_selector_create_group
 end
 
 ---------------------------
---- HeatGroupDispetcher ---
+--- HeatGroupDispatcher ---
 ---------------------------
-HeatGroupDispetcher = {
-    player_and_heat_group_containers = {} -- :Table<player_index: number, HeatGroupList>
-}
---- Обновляет Цифру температуры и Цвет фона для всех HeatGroup в группе.
-function HeatGroupDispetcher:update_temperature_for_overlay(event)
-    local player_heat_group_list = self.player_and_heat_group_containers[event.player_index]
-    for _, heat_group in ipairs(player_heat_group_list.content) do heat_group.update_temperature_values() end
-end
-function HeatGroupDispetcher:add_group_for_player(player_index, group_entites) 
-    
-end
-
-HeatGroupList = {
-    content = {}, -- :HeatGroup[]
-    next_elem_index = 1
+--- Глобальный объект, 
+--- Слушает все Gui events и отвечает за распределение event.player_index -> player.gui
+--- Всё что находится (абстрактно) глубже, в теории не должно знать что есть другие игроки 
+PlayerGuiDispatcher = {
+    player_and_heat_group_list__array = {} -- :Table<player_index: number, HeatGroupList>
 }
 
-function HeatGroupList.next_elem_index()
-    local curr_group_index = HeatGroupList.next_elem_index
-    HeatGroupList.next_elem_index = HeatGroupList.next_elem_index + 1
-    return curr_group_index
-end
+-- --- Обновляет Цифру температуры и Цвет фона для всех HeatGroup в группе.
+-- function PlayerGuiDispatcher:update_temperature_for_overlay(event)
+--     local player_heat_group_list = self.player_and_heat_group_list__array[event.player_index]
+--     for _, heat_group in ipairs(player_heat_group_list.content) do heat_group.update_temperature_values() end
+-- end
 
-function HeatGroupList.add_group(gui_groups_container)
-    local curr_group_index = HeatGroupList.next_elem_index()
+-- function PlayerGuiDispatcher:add_group_for_player(player_index, group_entites) 
+--     local group_list = PlayerGuiDispatcher[player_index]
+--     -- если для игрока ещё не создан HeatGroupList, а он нужен
+--     if (group_list == nil) then 
+--         group_list = HeatGroupList:new()
+--         PlayerGuiDispatcher[player_index] = group_list
+--     end
+--     group_list.add_group(PlayerGui.heat_group_container, group_entites)
+-- end
 
-    local group = gui_groups_container.add {
-        type = "frame",
-        name = "ahm__heat_group_root_#" .. curr_group_index,
-        direction = "vertical",
-        caption = "Heat group " .. curr_group_index
+
+--- @class HeatGroupList
+HeatGroupList = {}
+
+function HeatGroupList:new()
+    local obj = {
+        --- @type HeatGroup 
+        content = {}, -- :HeatGroup[]
+        next_elem_index = 1
     }
-    group.add {
-        type = "sprite-button",
-        name = "ahm__heat_group_" .. curr_group_index .. "__add_blueprint",
-        sprite = "heat_group_add_blueprint_icon",
-        direction = "horizontal",
-        tooltip = "Выбрать/Перезаписать сущности для группы"
-    }
-    -- todo - impl logic: connect GUI with service layer
+
+    function obj.next_elem_index()
+        local curr_group_index = obj.next_elem_index
+        obj.next_elem_index = obj.next_elem_index + 1
+        return curr_group_index
+    end
+
+    function obj.create_heat_group(gui_groups_container, group_entites)
+        local curr_group_index = obj.next_elem_index()
+        local heat_group_name = "Heat group " .. curr_group_index
+        table.insert(obj.content, HeatGroup:new(heat_group_name, group_entites))
+
+        local group = gui_groups_container.add {
+            type = "frame",
+            name = "ahm__heat_group_root_#" .. curr_group_index,
+            direction = "vertical",
+            caption = heat_group_name
+        }
+        group.add {
+            type = "sprite-button",
+            name = "ahm__heat_group_" .. curr_group_index .. "__add_blueprint",
+            sprite = "heat_group_add_blueprint_icon",
+            direction = "horizontal",
+            tooltip = "Выбрать/Перезаписать сущности для группы"
+        }
+        -- todo - impl logic: connect GUI with service layer
+    end
+
+    return obj
 end
 
 --- Buttons:
@@ -121,8 +132,9 @@ end
 --- - Edit heat group selector
 --- - New heat group selector (shortcut & monitor button)
 HeatGroup = {}
-
-function HeatGroup:new(name)
+--- @param name string Индификатор группы + имя группы для GUI
+--- @param group_entites Entity[] набор игровых сущьностей для которых группы будет показывать температуру.
+function HeatGroup:new(name, group_entites)
     local obj = {
         classname = "HeatGroupDispetcher",
         content = {}, -- :Table<unit_number: string, HeatMarker>
@@ -130,6 +142,8 @@ function HeatGroup:new(name)
         group_name = name
     }
 
+    
+    --- @param entity Entity
     function obj:add_entity(entity)
         -- кейс в выборке есть Бойлеры и реакторы, но у них нет работы с теплом, как у Атомок
         if entity.valid == false or entity.temperature == nil then return end
@@ -145,7 +159,6 @@ function HeatGroup:new(name)
         local marker = self.content[entity_id]
         marker.destroy()
         self.content[entity_id] = nil -- garbage collector дальше сам справится
-
     end
 
     function obj:update_temperature_values()
@@ -154,6 +167,9 @@ function HeatGroup:new(name)
             heat_marker.update_temperature_overlay()
         end
     end
+
+    -- obj config
+    obj:add_entities(group_entites)
 
     return obj
 end
@@ -299,7 +315,7 @@ end
 --------------------
 --- GUI trigger ---
 --------------------
-script.on_nth_tick(60, HeatGroupDispetcher.update_temperature_for_overlay -- function(e)
+script.on_nth_tick(60, PlayerGuiDispatcher.on_nth_tick_update_temperature -- function(e)
 -- for _, player in pairs(game.connected_players) do
 -- todo - impl
 -- update_heat_enities_near_player(player) --- todo откоментить
@@ -317,7 +333,7 @@ local selector__create_group = {
     name = 'monitor__selector__create_group'
 }
 
-function Gui.set_selector_create_group(gui_event)
+function PlayerGui.set_selector_create_group(gui_event)
     print("create_group - RUN")
     local player = game.players[gui_event.player_index]
     if player.clear_cursor() then -- ?  сброс выделенного предмата, если он есть
@@ -326,32 +342,29 @@ function Gui.set_selector_create_group(gui_event)
     end
 end
 
-
-function Gui.process_on_gui_click(gui_event)
+function PlayerGui.process_on_gui_click(gui_event)
     print("process_on_gui_click - RUN")
-    local button_action = Gui.button_action_register[gui_event.name]
+    local button_action = PlayerGui.button_action_register[gui_event.name]
     if (~button_action) then error("err! button_action is not found for button '" .. gui_event.name .. "'!") end
     button_action() -- todo test
 end
 
 -- todo impl
 -- https://lua-api.factorio.com/latest/events.html#on_gui_click
-script.on_gui_click(Gui.process_on_gui_click)
+script.on_gui_click(PlayerGui.process_on_gui_click)
 
 -- https://lua-api.factorio.com/latest/events.html#on_player_selected_area
-function Gui.on_player_selected_area(event, is_alt_select)
+function PlayerGui.on_player_selected_area(event, is_alt_select)
     if (event.name == "heat-monitor__selector__create_group") then
         if (~is_alt_select) then
-        -- player -> dispetcher -> new group.apply {add entities}
-        -- HeatGroupDispetcher.update_temperature_for_overlay
-             player = game.players[event.player_index]
-        else 
+            -- player -> dispetcher -> new group.apply {add entities}
+            -- HeatGroupDispetcher.update_temperature_for_overlay
+            player = game.players[event.player_index]
+        else
 
         end
     elseif (event.name == "heat-monitor__selector__edit_group") then
-        if (~is_alt_select) then
-            
-        end
+        if (~is_alt_select) then end
     end
 end
 

@@ -1,5 +1,6 @@
 local heat_selector = require("heat_selector").heat_selector
-local gui = require("gui")
+-- local gui = require("gui")
+local gui = require("gui2")
 
 local red, yellow, green = {1, 0, 0}, {1, 1, 0}, {0, 1, 0}
 
@@ -208,11 +209,13 @@ end
 -- end)
 
 script.on_init(function()
+    print("init control ")
 
-    for _, player in pairs(game.players) do
-        gui.create_interface(player)
-        -- gui.create_buttons(player)
-    end
+    -- for _, player in pairs(game.players) do
+    --     gui.create_interface(player)
+    --     -- gui.create_buttons(player)
+    -- end
+    PlayerGuiDispatcher:on_init_event() -- todo import gui2
     
 end)
 -- script.on_load(function()
