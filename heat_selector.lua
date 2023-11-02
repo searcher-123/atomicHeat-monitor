@@ -32,6 +32,7 @@ heat_selector_singlton = {
     }
 }
 
+
 heat_palette= {
  b_need_numbers=true, --нужны ли числа true / false
  b_need_rects=false,--нужна ли подсветка клеток true / false
@@ -89,11 +90,13 @@ function new_heat_group(name, entities)
     }
 end
 
+
 function process(event, debug, print)
     if event.item and event.item ~= 'heat-monitor__selector' then return end
     heat_groups = heat_selector_singlton.players_heat_groups[event.player_index]
     -- table.insert(heat_groups, new_heat_group("heat group #1", event.entities))
     heat_groups[0] = new_heat_group("heat group #1", event.entities)
+	
 end
 
 function do_nothing(value) end
