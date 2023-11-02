@@ -43,6 +43,7 @@ function PlayerGuiDispatcher:on_init_event()
     end
 end
 
+
 -- https://lua-api.factorio.com/latest/events.html#on_player_selected_area
 function PlayerGuiDispatcher:on_player_selected_area(event, is_alt_select)
     local player_index = event.player_index
@@ -76,32 +77,32 @@ function PlayerGuiDispatcher:process_on_gui_click(gui_event)
     local player_gui = self:get_or_create_Gui(gui_event.player_index)
     local player_groups = self:get_or_create_heat_group_list(gui_event.player_index)
 
-    if string == "ahm__toolbar__create_new_group_button" then
+    if string.find(btn_name, "->create_group") then
+        player_gui:set_selector_create_group(gui_event)
     elseif string.find(btn_name, "->edit_content") then
     elseif string.find(btn_name, "->delete_group") then
         -- важен порядок действий - сначала логика, и в конце gui
         player_groups:delete_heat_group(gui_event.element.tags.group_name)
         player_gui:process_delete_group(gui_event)
-    else
-        -- временный API - в будущем выпилить
-        player_gui:process_button_pressed(gui_event.element.name, gui_event)
     end
 end
 
-local selector__shortcut = "heat-monitor__shortcut"
 
+local hotkey_event__create_group = "ahm_pressed-create_group_hotkey"
+
+function PlayerGuiDispatcher.on_hotkey_pressed__create_group(event)
+    PlayerGuiDispatcher:set_selector_tool(event.player_index)
+end
+
+local selector__shortcut = "heat-monitor__shortcut"
 -- ссылка на функцию передаётся в как callback в движок и там, нет возможности передать 
 -- self первым аргументов, первый аргумент всегда event
 -- поэтому без сахара в виде self
 function PlayerGuiDispatcher.on_lua_shortcut(event)
     local self = PlayerGuiDispatcher
     if event.prototype_name ~= selector__shortcut then return end
-    local player_gui = self.player_and_gui_array[event.player_index]
-    -- делаем вид, что передаём gui_event. Мимикрируем под gui_event XD
-    player_gui:set_selector_create_group({
-        player_index = event.player_index
-    })
 
+    self:set_selector_tool(event.player_index)
 end
 
 --------------------
@@ -116,9 +117,13 @@ function PlayerGuiDispatcher:add_group_for_player(player_index, group_entites)
     player_gui:create_gui_for_heat_group(new_heat_group)
 end
 
--- function PlayerGuiDispatcher.delete_heat_group_for_player(player_index, heat_group_name)
---     local group = player_gui.heat_group_container[heat_group_name]
--- end
+function PlayerGuiDispatcher:set_selector_tool(player_index)
+     local player_gui = self.player_and_gui_array[player_index]
+    -- делаем вид, что передаём gui_event. Мимикрируем под gui_event XD
+    player_gui:set_selector_create_group({
+        player_index = player_index
+    })
+end
 
 ------------------------
 --- @file: PlayerGui ---
@@ -140,8 +145,6 @@ function PlayerGui:new(player)
 
     --- @param player LuaPlayer 
     function obj:init_interface(player)
-        --- @type LuaGuiElement https://lua-api.factorio.com/latest/concepts.html#GuiElementType
-        -- local root_frame = player.gui.screen.add {
         self.root = player.gui.screen.add {
             type = "frame",
             name = "ahm__root__frame",
@@ -166,11 +169,10 @@ function PlayerGui:new(player)
         }
         local create_new_group_btn = self.toolbar.add {
             type = "sprite-button",
-            name = "ahm__toolbar__create_new_group_button",
+            name = "ahm__toolbar__->create_group",
             sprite = "heat_group_add_blueprint_icon",
             tooltip = "Создать группу" -- todo local text resource
         }
-        self.button_action_register[create_new_group_btn.name] = self.set_selector_create_group
     end
 
     function obj:create_gui_for_heat_group(heat_group)
@@ -184,36 +186,24 @@ function PlayerGui:new(player)
             type = "sprite-button",
             name = "ahm__heat_group_root_#" .. heat_group.group_name .. "__->edit_content",
             sprite = "heat_group_add_blueprint_icon",
-            -- direction = "horizontal",
-            tooltip = "Выбрать/Перезаписать сущности для группы (Comming soon! :D)"
+            tooltip = "Выбрать/Перезаписать сущности для группы (Comming soon! :D)" -- todo local text resource
         }
         -- todo - impl logic: connect GUI with service layer
         local delete_group_btn = group.add {
             type = "sprite-button",
             name = "ahm__heat_group_root_#" .. heat_group.group_name .. "__->delete_group",
             sprite = "heat_group_delete_icon",
-            -- direction = "horizontal",
             tooltip = "Удалить группу", -- todo local text resource
             tags = {
                 group_name = heat_group.group_name
             }
         }
-        -- todo impl
-        self.button_action_register[delete_group_btn.name] = self.set_selector_create_group
     end
 
-    function obj:process_button_pressed(gui_event_name, gui_event)
-        local button_action = self.button_action_register[gui_event_name]
-        if (button_action == nil) then
-            error("err! button_action is not found for button '" .. gui_event_name .. "'!")
-        end
-        button_action(self, gui_event, nil) -- todo test + check self invoke
-    end
+
 
     -----------------------
     --- Buttons actions ---
-    --- Все методы ниже, используются как Стратэгия - обязаны иметь одинаковые аргументы т.к. 
-    --- кладутся в Словарь <btn_name : string, function(gui_event)>
     -----------------------
 
     --- @type ItemStackIdentification
@@ -241,9 +231,6 @@ function PlayerGui:new(player)
         for _, gui_heat_group_root in ipairs(self.heat_group_container.children) do
             if (string.find(gui_heat_group_root.name, heat_group_name)) then gui_heat_group_root.destroy() end
         end
-        -- удалить gui -- уничтожить gui_element + все его дочерние элементы
-        -- self.heat_group_container[heat_group_name].destroy()
-        -- self.heat_group_container[heat_group_name] = nil
     end
 
     -- config self
@@ -252,20 +239,14 @@ function PlayerGui:new(player)
     return obj
 end
 
---- TODO переделать в Table<group_name : string, group>
 --- @class HeatGroupList
 HeatGroupList = {}
 function HeatGroupList:new()
     local obj = {
         classname = "HeatGroupList",
-        content = {}, --- @type Table<heat_group_name : string, HeatGroup>
+        content = {}, --- @type Table <heat_group_name : string, HeatGroup>
         _next_elem_index = 1
     }
-
-    -- function obj:get_heat_group_by_name(heat_group_name)
-    --     for _, group in pairs(self.content) do if group.group_name == heat_group_name then return group end end
-    --     return nil
-    -- end
 
     function obj:next_elem_index()
         local curr_group_index = self._next_elem_index
@@ -277,7 +258,6 @@ function HeatGroupList:new()
         local curr_group_index = self:next_elem_index()
         local heat_group_name = "Heat group " .. curr_group_index
         local rsl = HeatGroup:new(heat_group_name, group_entites)
-        -- table.insert(self.content, rsl)
         self.content[heat_group_name] = rsl
         return rsl
     end
@@ -288,10 +268,10 @@ function HeatGroupList:new()
             log("WARM! delete_heat_group(\"" .. group_name .. "\") -> nil   - Do nothing!")
             return
         end
-        for _, heat_marker in pairs(heat_group.content) do 
-        log("marker_guit_text"..heat_marker.gui_text_id)
-        heat_marker:destroy()
-         end
+        for _, heat_marker in pairs(heat_group.content) do
+            log("marker_guit_text" .. heat_marker.gui_text_id)
+            heat_marker:destroy()
+        end
     end
 
     return obj
@@ -528,3 +508,4 @@ script.on_init(function()
 end)
 
 script.on_event(defines.events.on_lua_shortcut, PlayerGuiDispatcher.on_lua_shortcut)
+script.on_event(hotkey_event__create_group, PlayerGuiDispatcher.on_hotkey_pressed__create_group)
