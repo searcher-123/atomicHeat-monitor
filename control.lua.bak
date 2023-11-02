@@ -11,35 +11,37 @@ end
 
 
 local heat_selector = require("heat_selector").heat_selector
--- local selector_func = require("heat_selector").selector
+-- local gui = require("gui")
+local gui = require("gui2")
+-- local red, yellow, green = {1, 0, 0}, {1, 1, 0}, {0, 1, 0}
 
-local red, yellow, green = {1, 0, 0}, {1, 1, 0}, {0, 1, 0}
+-- local awhite = {
 
-local awhite = {
-    r = 161 / 256,
-    g = 161 / 256,
-    b = 161 / 256,
-    a = 0.1
-}
-local ablue = {
-    r = 0 / 256,
-    g = 91 / 256,
-    b = 196 / 256,
-    a = 0.2
-}
-local ared = {
-    r = 168 / 256,
-    g = 32 / 256,
-    b = 44 / 256,
-    a = 0.1
-}
+-- local awhite = {
+--     r = 161 / 256,
+--     g = 161 / 256,
+--     b = 161 / 256,
+--     a = 0.1
+-- }
+-- local ablue = {
+--     r = 0 / 256,
+--     g = 91 / 256,
+--     b = 196 / 256,
+--     a = 0.2
+-- }
+-- local ared = {
+--     r = 168 / 256,
+--     g = 32 / 256,
+--     b = 44 / 256,
+--     a = 0.1
+-- }
 
-local arr_ent = {}
-arr_ent.arr_text = {}
-arr_ent.arr_box = {}
+-- local arr_ent = {}
+-- arr_ent.arr_text = {}
+-- arr_ent.arr_box = {}
 
-local marker_time_to_live = 61 -- кол-во тиков
-local radius_to_search_heat_from_player = 50 -- кол-во клеток от игрока
+-- local marker_time_to_live = 61 -- кол-во тиков
+-- local radius_to_search_heat_from_player = 50 -- кол-во клеток от игрока
 
 local draw_params = {
     time_to_live = 61,
@@ -52,25 +54,57 @@ local draw_params = {
     filled = true
 }
 
--- draw_rectangle{color=…, width?=…, filled=…, left_top=…, left_top_offset?=…, right_bottom=…, right_bottom_offset?=…, surface=…, time_to_live?=…, forces?=…, players?=…, visible?=…, draw_on_ground?=…, only_in_alt_mode?=…} 
-local draw_params_rect = {
-    time_to_live = 61,
-    target_offset = {.2, -.375},
-    forces = {},
-    only_in_alt_mode = true,
-    scale = 1.125,
-    scale_with_zoom = true,
-    alignment = "center",
-    filled = true,
-    left_top = {
-        x = 0,
-        y = 0
-    },
-    right_bottom = {
-        x = 0,
-        y = 0
-    }
-}
+-- -- draw_rectangle{color=…, width?=…, filled=…, left_top=…, left_top_offset?=…, right_bottom=…, right_bottom_offset?=…, surface=…, time_to_live?=…, forces?=…, players?=…, visible?=…, draw_on_ground?=…, only_in_alt_mode?=…} 
+-- local draw_params_rect = {
+--     time_to_live = 61,
+--     target_offset = {.2, -.375},
+--     forces = {},
+--     only_in_alt_mode = true,
+--     scale = 1.125,
+--     scale_with_zoom = true,
+--     alignment = "center",
+--     filled = true,
+--     left_top = {
+--         x = 0,
+--         y = 0
+--     },
+--     right_bottom = {
+--         x = 0,
+--         y = 0
+--     }
+-- }
+
+-- function approx_color(color1, color2, weight)
+--     r = color1.r * weight + color2.r * (1 - weight)
+--     g = color1.g * weight + color2.g * (1 - weight)
+--     b = color1.b * weight + color2.b * (1 - weight)
+--     a = color1.a * weight + color2.a * (1 - weight)
+--     -- log("color4 ")
+--     -- log("color1 " .. "." .. color1.r .. "," .. color1.g .. "," .. color1.b ..
+--     -- "," .. a)
+--     -- log("color2 " .. "." .. color2.r .. "," .. color2.g .. "," .. color2.b ..
+--     -- "," .. a)
+--     -- log("color and num " .. weight .. ", " .. r .. ", " .. g .. ", " .. b ..
+--     -- ", " .. a)
+--     return {r, g, b, a}
+-- end
+
+-- function log_file(text_to_Log) game.write_file("atomicHeat-monitor.txt", text_to_Log .. "\r\n", true) end
+
+-- function draw_heat_amount_for_entity(heat_entity)
+--     if heat_entity.valid == false or heat_entity.temperature == nil -- кейс в выборке есть Бойлеры и реакторы, но у них нет работы с теплом, как у Атомок
+--     then return end
+--     local temperature = math.floor(heat_entity.temperature)
+
+--     draw_params.target = heat_entity
+--     draw_params.surface = heat_entity.surface
+--     draw_params.forces[1] = heat_entity.force
+--     draw_params.color = green
+
+--     draw_params_rect.surface = heat_entity.surface
+
+--     new_heat_box(heat_entity, temperature)
+--     update_heat_text(heat_entity, temperature)
 
 function approx_color4(color1, color2, weight)
     r = color1.r * weight + color2.r * (1 - weight)
@@ -209,96 +243,11 @@ function find_heat_entity_near_player(player)
     }
 end
 
-heat_groups_by_pos={}
-
-function create_and_sort_heat_groups (heat_groups,heat_groups_by_pos)
-  heat_groups_by_pos={}
-  log("create_and_sort_heat_groups s")
-  if heat_groups == nil then return end
-  log("create_and_sort_heat_groups cont")
-  heat_groups_by_pos.min_x=9999999
-  heat_groups_by_pos.max_x=-9999999
-  heat_groups_by_pos.min_y=9999999
-  heat_groups_by_pos.max_y=-9999999
-  heat_groups_by_pos.ent={}
-   for _, heat_group in pairs(heat_groups) do       
-		for _, heat_group in pairs(heat_group ) do		
-		log ("heat_group ")
-		if heat_group == nil then return end
-		log ("heat_group 1")
-		if heat_group.entities == nil then return end		
-		log ("heat_group 2")
-		e=heat_group.entities
-		log ("strange "..#e)
-        for _, heat_entity in pairs(heat_group.entities) do 
-			if heat_entity.valid ==true then
-				pos=heat_entity.selection_box.left_top
-				log ("pos "..pos.x)
-				x_l=pos.x
-				y_t=pos.y
-				pos=heat_entity.selection_box.right_bottom
-				x_r=pos.x-1
-				y_b=pos.y-1
-				if x_r>heat_groups_by_pos.max_x then heat_groups_by_pos.max_x=x_r end
-				if y_t>heat_groups_by_pos.max_y then heat_groups_by_pos.max_y=y_t end
-				if x_l<heat_groups_by_pos.min_x then heat_groups_by_pos.min_x=x_l end
-				if y_b<heat_groups_by_pos.min_y then heat_groups_by_pos.min_y=y_b end			
-				for x=x_l, x_r do				
-					for y=y_t,y_b do					
-						heat_groups_by_pos.ent["x"..x.."y"..y]=heat_entity				
-					end
-				end
-			end
-        end
-    end
-	end
-	log ("done "..heat_groups_by_pos.max_x)
-	return  heat_groups_by_pos
-end
-
-function save_rows_temp (heat_groups,heat_groups_by_pos)
-    log ("save_rows_temp")
-	--if heat_groups_by_pos=={} then heat_groups_by_pos=create_and_sort_heat_groups{heat_groups} end
-	heat_groups_by_pos=create_and_sort_heat_groups{heat_groups,heat_groups_by_pos}
---game.write_file ("atomicHeat_temps.txt")
-	log ("create_and_sort_heat_groups done")
-	if heat_groups_by_pos =={} then 
-		log ("no sort ")
-		end
-	log ("xx min_max_x "..heat_groups_by_pos.min_x.."/".. heat_groups_by_pos.max_x)
-	log ("yy min_max_y "..heat_groups_by_pos.min_y.."/".. heat_groups_by_pos.max_y)
-	ym=heat_groups_by_pos.min_y
-	xm=heat_groups_by_pos.min_x
-	log ("yy=="..(heat_groups_by_pos.max_y-heat_groups_by_pos.min_y)-1)
-	for y= 0, (heat_groups_by_pos.max_y-heat_groups_by_pos.min_y)-1 do	
-			log ("line"..y+ym)
-			   str_line="temp_data. tick ;"..game.tick.."; line ;"..y
-				for x=0,  heat_groups_by_pos.max_x-heat_groups_by_pos.min_x-1 do							
-					log ("row"..x+xm)
-					ent=heat_groups_by_pos.ent["x"..x+xm.."y"..y+ym]					
-					str_temp="-"
-					if ent ~=nil then 
-						str_temp=ent.temperature
-					else
-						str_temp="-"
-					end
-					str_line=str_line..";"..str_temp
-				end
-				game.write_file ("atomicHeat_temps_x.txt",str_line.."\r\n",true)
-			end
-	for key,val in pairs (heat_groups_by_pos.ent) do
-		log ("heat_groups _k "..key)
-		log ("heat_groups _v "..val.name)
-		log ("heat_groups _t "..val.temperature)
-		end
-end
-
-script.on_nth_tick(10, function(e)
+script.on_nth_tick(60, function(e)
 	set_palette ()--костыль .перенести в однократный пуск
     for _, player in pairs(game.connected_players) do
         -- update_heat_enities_near_player(player) --- todo откоментить
         update_heat_selector__heat_groups__entities(player)
-		
     end
 	--heat_palette_export()
 end)
@@ -330,7 +279,6 @@ function update_heat_selector__heat_groups__entities(player)
             draw_heat_amount_for_entity(heat_entity) 
         end
     end
-	save_rows_temp(heat_groups,heat_groups_by_pos)
     -- for heat_entity in heat_group_entities do draw_heat_amount_for_entity(heat_entity) end
     -- for heat_entity in heat_selector[player.index].entities do draw_heat_amount_for_entity(heat_entity) end
 
