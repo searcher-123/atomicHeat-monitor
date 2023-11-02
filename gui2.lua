@@ -6,6 +6,7 @@
 --- Слушает все Gui events и отвечает за распределение event.player_index -> player.gui.
 --- Всё что находится (абстрактно) глубже, в теории не должно знать что есть другие игроки.
 PlayerGuiDispatcher = {
+    classname = "PlayerGuiDispatcher",
     player_and_heat_group_list__array = {}, -- :Table<player_index: number, HeatGroupList>
     player_and_gui_array = {} -- :Table<player_index: number, PlayerGui>
 }
@@ -37,7 +38,8 @@ end
 
 function PlayerGuiDispatcher:on_init_event()
     for _, player in pairs(game.players) do
-        table.insert(self.player_and_heat_group_list__array, PlayerGui:new(player))
+        table.insert(self.player_and_heat_group_list__array, HeatGroupList:new())
+        table.insert(self.player_and_gui_array, PlayerGui:new(player))
     end
 end
 
@@ -45,48 +47,89 @@ end
 function PlayerGuiDispatcher:on_player_selected_area(event, is_alt_select)
     local player_index = event.player_index
     local group_entities = event.entities
-    local player_gui = self.get_or_create_Gui(player_index)
-    local heat_group_list = self.get_or_create_heat_group_list(player_index)
+    local player_gui = self:get_or_create_Gui(player_index)
+    local heat_group_list = self:get_or_create_heat_group_list(player_index)
 
-    if (event.name == "heat-monitor__selector__create_group") then
+    if (event.item == "heat-monitor__selector__create_group") then
         if (is_alt_select == false) then
             self:add_group_for_player(player_index, group_entities)
         else
 
         end
-    elseif (event.name == "heat-monitor__selector__edit_group") then
+    elseif (event.item == "heat-monitor__selector__edit_group") then
         if (is_alt_select == false) then end
     end
 end
 
-function PlayerGuiDispatcher:on_nth_tick_update_temperature(event)
-    local heat_group_list = self.get_or_create_heat_group_list(event.player_index)
-    for _, heat_group in ipairs(heat_group_list.content) do heat_group.update_temperature_values() end
+function PlayerGuiDispatcher:on_nth_tick_update_temperature(arg)
+    for player_index, player_heat_groups in pairs(PlayerGuiDispatcher.player_and_heat_group_list__array) do
+        for _, heat_group in ipairs(player_heat_groups.content) do heat_group:update_temperature_values() end
+    end
 end
 
 --- Точка входа для обработки нажатия Любой Кнопки(GuiElement{type="button"})
 function PlayerGuiDispatcher:process_on_gui_click(gui_event)
+    local btn_name = gui_event.element.name
     print("process_on_gui_click - RUN")
-    local player_gui = self.get_or_create_Gui(gui_event.player_index)
-    player_gui.process_button_pressed(gui_event.name)
+    -- скипаем нажатия на Чужие кнопки, все наши кнопки начинаются на "ahm"
+    if (string.sub(btn_name, 1, 3) ~= "ahm") then return end
+    local player_gui = self:get_or_create_Gui(gui_event.player_index)
+    local player_groups = self:get_or_create_heat_group_list(gui_event.player_index)
+
+    if string == "ahm__toolbar__create_new_group_button" then
+    elseif string.find(btn_name, "->edit_content") then
+    elseif string.find(btn_name, "->delete_group") then
+        -- важен порядок действий - сначала логика, и в конце gui
+        player_groups:delete_heat_group(gui_event.element.tags.group_name)
+        player_gui:process_delete_group(gui_event)
+    else
+        -- временный API - в будущем выпилить
+        player_gui:process_button_pressed(gui_event.element.name, gui_event)
+    end
+end
+
+local selector__shortcut = "heat-monitor__shortcut"
+
+-- ссылка на функцию передаётся в как callback в движок и там, нет возможности передать 
+-- self первым аргументов, первый аргумент всегда event
+-- поэтому без сахара в виде self
+function PlayerGuiDispatcher.on_lua_shortcut(event)
+    local self = PlayerGuiDispatcher
+    if event.prototype_name ~= selector__shortcut then return end
+    local player_gui = self.player_and_gui_array[event.player_index]
+    -- делаем вид, что передаём gui_event. Мимикрируем под gui_event XD
+    player_gui:set_selector_create_group({
+        player_index = event.player_index
+    })
+
 end
 
 --------------------
 --- Bussines API ---
 --------------------
+
 function PlayerGuiDispatcher:add_group_for_player(player_index, group_entites)
-    local player_gui = self.get_or_create_Gui(player_index)
-    local heat_group_list = self.get_or_create_heat_group_list(player_index)
+    local player_gui = self:get_or_create_Gui(player_index)
+    local heat_group_list = self:get_or_create_heat_group_list(player_index)
 
     local new_heat_group = heat_group_list:create_heat_group(group_entites)
     player_gui:create_gui_for_heat_group(new_heat_group)
 end
+
+-- function PlayerGuiDispatcher.delete_heat_group_for_player(player_index, heat_group_name)
+--     local group = player_gui.heat_group_container[heat_group_name]
+-- end
+
+------------------------
+--- @file: PlayerGui ---
+------------------------
 
 --- Класс отвечает за Создание, Настройку, Изменение, Действия кнопок GUI для Определённого юзера.
 PlayerGui = {}
 --- @param player LuaPlayer 
 function PlayerGui:new(player)
     local obj = {
+        classname = "PlayerGui",
         player = player, --- @type LuaPlayer
         root = nil, --- @type LuaGuiElement @lateint
         toolbar = nil, --- @type LuaGuiElement @lateint
@@ -113,9 +156,6 @@ function PlayerGui:new(player)
             name = "ahm__heat_group_container__scroll-pane",
             direction = "vertical"
         }
-        -- obj.init_toolbar()
-        -- HeatGroupDispetcher.addGroup(Gui.heat_group_container)
-        -- HeatGroupDispetcher.addGroup(Gui.heat_group_container)
     end
 
     function obj:init_toolbar()
@@ -136,33 +176,49 @@ function PlayerGui:new(player)
     function obj:create_gui_for_heat_group(heat_group)
         local group = self.heat_group_container.add {
             type = "frame",
-            name = "ahm__heat_group_root_#" .. heat_group.name,
-            direction = "vertical",
-            caption = heat_group.name
+            name = "ahm__heat_group_root_#" .. heat_group.group_name,
+            direction = "horizontal",
+            caption = heat_group.group_name
         }
         group.add {
             type = "sprite-button",
-            name = heat_group.name .. "__->edit_content",
+            name = "ahm__heat_group_root_#" .. heat_group.group_name .. "__->edit_content",
             sprite = "heat_group_add_blueprint_icon",
-            direction = "horizontal",
-            tooltip = "Выбрать/Перезаписать сущности для группы (Пока не работает и делает Краш игры! :D)"
+            -- direction = "horizontal",
+            tooltip = "Выбрать/Перезаписать сущности для группы (Comming soon! :D)"
         }
         -- todo - impl logic: connect GUI with service layer
+        local delete_group_btn = group.add {
+            type = "sprite-button",
+            name = "ahm__heat_group_root_#" .. heat_group.group_name .. "__->delete_group",
+            sprite = "heat_group_delete_icon",
+            -- direction = "horizontal",
+            tooltip = "Удалить группу", -- todo local text resource
+            tags = {
+                group_name = heat_group.group_name
+            }
+        }
+        -- todo impl
+        self.button_action_register[delete_group_btn.name] = self.set_selector_create_group
     end
 
-    function obj:process_button_pressed(gui_event_name)
+    function obj:process_button_pressed(gui_event_name, gui_event)
         local button_action = self.button_action_register[gui_event_name]
-        if (button_action == nil) then error("err! button_action is not found for button '" .. gui_event_name .. "'!") end
-        button_action() -- todo test
+        if (button_action == nil) then
+            error("err! button_action is not found for button '" .. gui_event_name .. "'!")
+        end
+        button_action(self, gui_event, nil) -- todo test + check self invoke
     end
 
     -----------------------
     --- Buttons actions ---
+    --- Все методы ниже, используются как Стратэгия - обязаны иметь одинаковые аргументы т.к. 
+    --- кладутся в Словарь <btn_name : string, function(gui_event)>
     -----------------------
 
     --- @type ItemStackIdentification
     local selector__create_group = {
-        name = 'monitor__selector__create_group'
+        name = 'heat-monitor__selector__create_group'
     }
 
     function obj:set_selector_create_group(gui_event)
@@ -176,6 +232,20 @@ function PlayerGui:new(player)
         end
     end
 
+    function obj:process_delete_group(gui_event)
+        print("create_group - RUN")
+        local player_index = gui_event.player_index
+        local heat_group_name = gui_event.element.tags.group_name
+
+        -- удалить gui -- уничтожить gui_element + все его дочерние элементы
+        for _, gui_heat_group_root in ipairs(self.heat_group_container.children) do
+            if (string.find(gui_heat_group_root.name, heat_group_name)) then gui_heat_group_root.destroy() end
+        end
+        -- удалить gui -- уничтожить gui_element + все его дочерние элементы
+        -- self.heat_group_container[heat_group_name].destroy()
+        -- self.heat_group_container[heat_group_name] = nil
+    end
+
     -- config self
     obj:init_interface(player)
     obj:init_toolbar()
@@ -187,14 +257,19 @@ end
 HeatGroupList = {}
 function HeatGroupList:new()
     local obj = {
-        --- @type HeatGroup 
-        content = {}, -- :HeatGroup[]
-        next_elem_index = 1
+        classname = "HeatGroupList",
+        content = {}, --- @type Table<heat_group_name : string, HeatGroup>
+        _next_elem_index = 1
     }
 
+    -- function obj:get_heat_group_by_name(heat_group_name)
+    --     for _, group in pairs(self.content) do if group.group_name == heat_group_name then return group end end
+    --     return nil
+    -- end
+
     function obj:next_elem_index()
-        local curr_group_index = self.next_elem_index
-        self.next_elem_index = self.next_elem_index + 1
+        local curr_group_index = self._next_elem_index
+        self._next_elem_index = curr_group_index + 1
         return curr_group_index
     end
 
@@ -202,8 +277,21 @@ function HeatGroupList:new()
         local curr_group_index = self:next_elem_index()
         local heat_group_name = "Heat group " .. curr_group_index
         local rsl = HeatGroup:new(heat_group_name, group_entites)
-        table.insert(self.content, rsl)
+        -- table.insert(self.content, rsl)
+        self.content[heat_group_name] = rsl
         return rsl
+    end
+
+    function obj:delete_heat_group(group_name)
+        local heat_group = self.content[group_name]
+        if (heat_group == nil) then
+            log("WARM! delete_heat_group(\"" .. group_name .. "\") -> nil   - Do nothing!")
+            return
+        end
+        for _, heat_marker in pairs(heat_group.content) do 
+        log("marker_guit_text"..heat_marker.gui_text_id)
+        heat_marker:destroy()
+         end
     end
 
     return obj
@@ -261,7 +349,7 @@ function HeatGroup:new(name, group_entites)
     function obj:update_temperature_values()
         for unit_number, heat_marker in pairs(self.content) do
             -- local entity = self:__entities()[unit_number]
-            heat_marker.update_temperature_overlay()
+            heat_marker:update_temperature_overlay()
         end
     end
 
@@ -297,7 +385,7 @@ local box_red = {
     a = 0.1
 }
 local draw_params_text = {
-    target_offset = {.2, -.375},
+    target_offset = {0, -.375},
     forces = {},
     -- only_in_alt_mode = true,
     scale = 1.125,
@@ -324,23 +412,25 @@ local draw_params_box = {
 }
 
 function HeatMarker:new(entity, temperature)
-    local text_id = HeatMarker.new_heat_box(entity, temperature)
     local box_id = HeatMarker.new_heat_box(entity, temperature)
+    local text_id = HeatMarker.new_heat_text(entity, temperature)
     local obj = {
+        classname = "HeatMarker",
         --- Сущьности для которой мы рендерим Температуру
         lua_entity = entity,
         --- Показывать/Скрывать GUI todo - реализовать
         is_active = true,
-        gui_text_id = text_id, -- :id от LuaGuiElement
-        gui_box_id = box_id -- :id от LuaGuiElement
+        gui_box_id = box_id, -- :id от LuaGuiElement
+        gui_text_id = text_id -- :id от LuaGuiElement
     }
 
     function obj:update_temperature_overlay()
         local temperature = HeatMarker.calc_temperature_for_entity(self.lua_entity)
-        rendering.set_text(self.text_id, temperature)
-        rendering.set_color(self.text_id, HeatMarker.approx_color_text(temperature))
 
-        rendering.set_color(self.box_id, HeatMarker.approx_color_box(temperature))
+        rendering.set_color(self.gui_box_id, HeatMarker.approx_color_box(temperature))
+
+        rendering.set_text(self.gui_text_id, temperature)
+        rendering.set_color(self.gui_text_id, HeatMarker.approx_color_text(temperature))
     end
 
     function obj:update_is_active(bool)
@@ -348,8 +438,8 @@ function HeatMarker:new(entity, temperature)
     end
 
     function obj:destroy()
-        rendering.set_time_to_live(self.text_id, 0)
-        rendering.set_time_to_live(self.box_id, 0)
+        rendering.destroy(self.gui_box_id)
+        rendering.destroy(self.gui_text_id)
     end
 
     return obj
@@ -387,6 +477,9 @@ end
 function HeatMarker.new_heat_text(heat_entity, temperature)
     draw_params_text.color = HeatMarker.approx_color_text(temperature)
     draw_params_text.text = temperature
+    draw_params_text.surface = heat_entity.surface
+    draw_params_text.target = heat_entity
+    draw_params_text.forces[1] = heat_entity.force
     return rendering.draw_text(draw_params_text)
 end
 
@@ -406,6 +499,8 @@ function HeatMarker.new_heat_box(heat_entity, temperature)
     draw_params_box.color = HeatMarker.approx_color_box(temperature)
     draw_params_box.left_top = heat_entity.selection_box.left_top
     draw_params_box.right_bottom = heat_entity.selection_box.right_bottom
+    draw_params_box.surface = heat_entity.surface
+    draw_params_box.forces[1] = heat_entity.force
     return "" .. rendering.draw_rectangle(draw_params_box)
 end
 
@@ -413,28 +508,23 @@ end
 --- GUI trigger ---
 --------------------
 -- https://lua-api.factorio.com/latest/events.html#on_gui_click
-script.on_event(defines.events.on_gui_click,PlayerGui.process_on_gui_click)
+script.on_event(defines.events.on_gui_click, function(event) PlayerGuiDispatcher:process_on_gui_click(event) end)
 
 script.on_event(defines.events.on_player_selected_area,
-                function(event) PlayerGuiDispatcher.on_player_selected_area(event, false) end)
+                function(event) PlayerGuiDispatcher:on_player_selected_area(event, false) end)
 script.on_event(defines.events.on_player_alt_selected_area,
-                function(event) PlayerGuiDispatcher.on_player_selected_area(event, true) end)
+                function(event) PlayerGuiDispatcher:on_player_selected_area(event, true) end)
 
-script.on_nth_tick(60, PlayerGuiDispatcher.on_nth_tick_update_temperature -- function(e)
--- for _, player in pairs(game.connected_players) do
--- todo - impl
--- update_heat_enities_near_player(player) --- todo откоментить
--- update_heat_selector__heat_groups__entities(player)
--- end
--- end
-)
+script.on_nth_tick(60, PlayerGuiDispatcher.on_nth_tick_update_temperature)
 script.on_init(function()
-    print("init gui2 ")
+    log("init gui2 \r\n")
 
     -- for _, player in pairs(game.players) do
     --     gui.create_interface(player)
     --     -- gui.create_buttons(player)
     -- end
     PlayerGuiDispatcher:on_init_event() -- todo import gui2
-    
+
 end)
+
+script.on_event(defines.events.on_lua_shortcut, PlayerGuiDispatcher.on_lua_shortcut)
