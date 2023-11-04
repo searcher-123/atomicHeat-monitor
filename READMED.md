@@ -22,3 +22,28 @@
 TODO:
 - fix - при загрузки сейва с модом, падаем на том, что Такой gui уже существует у user
 - fix - create_group - не создавать группу если кол-во выбранных entity == 0
+- refactor - Dispatcher распилить на PlayerController
+- refactor - вынести в отдельные файлы
+- "atomic heat monitor" close button https://forums.factorio.com/viewtopic.php?t=98713
+
+Кнопки:
+--- Buttons:
+--- - active/disable - active/disable heat group markers
+--- - stop/start - stop/start recording into buffer, then stop - write to file
+--- - select entities(add/delete)
+--- - new group content - replace existed heat-group content
+--- - edit group name
+--- - delete group
+--- - - delete markers
+--- - - delete event callback links
+--- - show filer - show/hide entity category
+--- - - reactor button
+--- - - heat-exchanger button
+--- - - pipe button
+--- -
+--- - TODO 
+--- - on_entity_destroy() + registry
+--- - alt select
+--- - 
+--- - Edit heat group selector
+--- - New heat group selector (shortcut & monitor button)
