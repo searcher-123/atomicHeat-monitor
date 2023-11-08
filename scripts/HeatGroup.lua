@@ -1,4 +1,3 @@
--- require "HeatMarker"
 HeatGroup = {}
 --- @param name string Индификатор группы + имя группы для GUI
 --- @param group_entites Entity[] набор игровых сущьностей для которых группы будет показывать температуру.
@@ -12,8 +11,6 @@ function HeatGroup:new(name, group_entites)
 
     -- obj config
     HeatGroupLogic.add_entities(obj, group_entites)
-    -- obj:add_entities(group_entites)
-
     return obj
 end
 
@@ -41,7 +38,6 @@ end
 
 function HeatGroupLogic.update_temperature_values(heat_group)
     for unit_number, heat_marker in pairs(heat_group.content) do
-        -- local entity = self:__entities()[unit_number]
         HeatMarkerLogic.update_temperature_overlay(heat_marker)
     end
 end

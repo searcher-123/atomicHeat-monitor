@@ -1,4 +1,3 @@
--- require "scripts.GlobalTable"
 --- Первый уровень обработки любых Event
 --- содержит все EventHandlers - методы начинающиеся с do_on_ ...
 GlobalEventListener = {
@@ -12,8 +11,17 @@ GlobalEventListener = {
 --- GUI trigger ---
 --------------------
 function GlobalEventListener.register_events_handlers()
+    --- Наш мод подключили к существующему сейву 
+    --- ИЛИ создаётся чистый сейв уже с модом 
+    --- ИЛИ подключается новый новый игрок
     script.on_init(GlobalEventListener.do_on_init_event)
     script.on_load(GlobalEventListener.do_on_load_event)
+    --- Вызывается в любом из случаев:
+    --- GAME version
+    --- ANY MOD version
+    --- (ADD || REMOVE) ANY mod
+    --- (ADD || REMOVE) ANY prototype
+    --- ANY startup setting 
     script.on_configuration_changed(GlobalEventListener.do_on_configuration_changed_event)
 
     script.on_event(defines.events.on_gui_click, GlobalEventListener.do_on_gui_click)
@@ -47,14 +55,12 @@ function GlobalEventListener.do_on_gui_click(gui_event)
     local player_groups = GlobalTable.get_or_create_heat_group_list(gui_event.player_index)
 
     if string.find(btn_name, "->create_group") then
-        -- player_gui:set_selector_create_group(gui_event)
-        PlayerGuiLogic.set_selector_create_group(gui_event)
+        PlayerGuiLogic.set_selector_create_group(gui_event.player_index)
     elseif string.find(btn_name, "->edit_content") then
     elseif string.find(btn_name, "->delete_group") then
         -- важен порядок действий - сначала логика, и в конце gui
         HeatGroupStoreLogic.delete_heat_group(player_groups, gui_event.element.tags.group_name)
         PlayerGuiLogic.process_delete_group(player_gui, gui_event)
-        -- player_gui:process_delete_group(gui_event)
     end
 end
 
@@ -118,11 +124,8 @@ function GlobalConroller.add_group_for_player(player_index, group_entites)
 end
 
 function GlobalConroller.set_selector_tool(player_index)
-    --  local player_gui = GlobalTable.get_or_create_Gui(player_index)
     -- делаем вид, что передаём gui_event. Мимикрируем под gui_event XD
-    PlayerGuiLogic.set_selector_create_group({ -- todo можно на player_index перевести
-        player_index = player_index
-    })
+    PlayerGuiLogic.set_selector_create_group(player_index)
 end
 
 --------------------------------------------
@@ -140,11 +143,5 @@ function GlobalConroller.show_render_ids()
     return ids
 end
 
---- Переименовынный PlayerGui
---- 
--- PlayerGuiController = {
-
---     classname = "GlobalTable"
--- }
 
 return GlobalEventListener

@@ -7,7 +7,6 @@ function HeatGroupList:new()
         content = {}, --- :Table <heat_group_name : string, HeatGroup>
         _next_elem_index = 1
     }
-    -- return obj
 end
 
 HeatGroupStoreLogic = {}
@@ -32,7 +31,7 @@ HeatGroupStoreLogic = {}
             return
         end
         for _, heat_marker in pairs(heat_group.content) do
-            log("marker_gui_text" .. heat_marker.gui_text_id)
+            -- log("marker_gui_text" .. heat_marker.gui_text_id)
             HeatMarkerLogic.destroy(heat_marker)
         end
         heatGroupList.content[group_name] = nil

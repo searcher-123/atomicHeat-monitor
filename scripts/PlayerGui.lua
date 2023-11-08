@@ -1,7 +1,4 @@
-------------------------
---- @file: PlayerGui ---
-------------------------
---- Класс отвечает за Создание, Настройку, Изменение, Действия кнопок GUI для Определённого юзера.
+--- Класс отвечает за Создание, Настройку, Изменение, Действия кнопок GUI для Одного Определённого юзера.
 PlayerGui = {}
 --- @param player LuaPlayer 
 function PlayerGui:new(player)
@@ -72,7 +69,7 @@ function PlayerGuiLogic.add_gui_for_heat_group(playerGui, heat_group)
         type = "sprite-button",
         name = "ahm__heat_group_root_#" .. heat_group.group_name .. "__->edit_content",
         sprite = "heat_group_add_blueprint_icon",
-        tooltip = "Выбрать/Перезаписать сущности для группы (Comming soon! :D)" -- todo local text resource
+        tooltip = "Выбрать/Перезаписать сущности для группы (Comming soon! :D)" -- TODO local text resource
     }
     group.add {
         type = "sprite-button",
@@ -91,9 +88,9 @@ local selector__create_group = {
 }
 
 -- todo - refac : тут мы можем забить на player_index и вообще на gui_event
-function PlayerGuiLogic.set_selector_create_group(gui_event)
+function PlayerGuiLogic.set_selector_create_group(player_index)
     print("create_group - RUN")
-    local event_player = game.players[gui_event.player_index]
+    local event_player = game.players[player_index]
     if event_player.clear_cursor() then -- ?  сброс выделенного предмата, если он есть
         local stack = event_player.cursor_stack
         if stack and stack.can_set_stack(selector__create_group) then stack.set_stack(selector__create_group) end

@@ -52,16 +52,16 @@ local draw_params_box = {
 function HeatMarker:new(entity, temperature)
     local box_id = HeatMarker.new_heat_box(entity, temperature)
     local text_id = HeatMarker.new_heat_text(entity, temperature)
-    local obj = {
+    return {
         classname = "HeatMarker",
         --- Сущьности для которой мы рендерим Температуру
         lua_entity = entity,
         --- Показывать/Скрывать GUI todo - реализовать
-        is_active = true,
+        -- is_active = true,
         gui_box_id = box_id, -- :id от LuaGuiElement
         gui_text_id = text_id -- :id от LuaGuiElement
     }
-    return obj
+    -- return obj
 end
 
 ----------------------------------
@@ -112,7 +112,6 @@ function HeatMarker.approx_color_box(temperature)
     end
 end
 
---- todo - test this
 function HeatMarker.new_heat_box(heat_entity, temperature)
     draw_params_box.color = HeatMarker.approx_color_box(temperature)
     draw_params_box.left_top = heat_entity.selection_box.left_top
@@ -139,9 +138,10 @@ HeatMarkerLogic = {}
         rendering.set_color(heat_marker.gui_text_id, HeatMarker.approx_color_text(temperature))
     end
 
-    function HeatMarkerLogic.update_is_active(heat_marker, bool)
-        -- todo - impl 
-    end
+    -- function HeatMarkerLogic.update_is_active(heat_marker, bool)
+    --     -- TODO: - impl 
+    --     -- todo: - 
+    -- end
 
     function HeatMarkerLogic.destroy(heat_marker)
         rendering.destroy(heat_marker.gui_box_id)

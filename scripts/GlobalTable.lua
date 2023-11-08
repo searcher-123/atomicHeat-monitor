@@ -8,12 +8,9 @@ GlobalTable = {
     is_loaded_from_save = false
 }
 
---- Наш мод подключили к существующему сейву 
---- ИЛИ создаётся чистый сейв уже с модом 
---- ИЛИ подключается новый новый игрок
 function GlobalTable.do_on_init_event()
     log("GlobalTable.do_on_init_event() - RUN\r\n")
-    if  global.ahm  == nil then
+    if global.ahm == nil then
         for _, player in pairs(game.players) do
             table.insert(GlobalTable.player_and_heat_group_list__array, HeatGroupList:new())
             table.insert(GlobalTable.player_and_gui__array, PlayerGui:new(player))
@@ -30,24 +27,21 @@ function GlobalTable.do_on_load_event()
     GlobalTable.is_loaded_from_save = true
 end
 
---- game version
---- ANY mod version
---- (ADD || REMOVE) ANY mod
---- (ADD || REMOVE) ANY prototype
---- ANY startup setting 
 function GlobalTable.do_on_configuration_changed_event(configurationChangedData)
     log("GlobalTable.do_on_load_event() - RUN\r\n")
     -- --- пока ничего
     local our_changes = configurationChangedData.mod_changes["atomicHeat-monitor"]
+    if our_changes == nil then return end
 
     --- 1 - наш мод подключили к существующему сейву и on_init_event() уже отрабовал, так что просто выходим
     --- on_init_event() -> on_configuration_changed_event()
     --- 2 - есть странный момент что lua Global state обнуляется между
     --- on_init_event() -> on_configuration_changed_event()
     --- НО! factorio global остаётся
-    if (our_changes.old_version == nil) then return
+    if (our_changes.old_version == nil) then
+        return
 
-    --- это тех. версии в них не было global state
+        --- это тех. версии в них не было global state
     elseif (our_changes.old_version == "0.0.1") then
         GlobalTable.do_on_init_event()
     elseif (our_changes.old_version == "0.0.2") then
@@ -59,12 +53,11 @@ function GlobalTable.do_on_configuration_changed_event(configurationChangedData)
         GlobalTable.do_on_init_event()
 
         --- для будущего
-    -- elseif (our_changes.old_version == "0.0.4") then
+        -- elseif (our_changes.old_version == "0.0.4") then
 
-        -- global.ahm.total_destroy() -- todo impl
         -- GlobalTable.do_on_init_event()
 
-    -- else
+        -- else
         -- GlobalTable.do_on_init_event()
     end
     local k = ""
@@ -97,16 +90,6 @@ function GlobalTable.get_or_create_Gui(player_index)
     return player_gui
 end
 
--- function GlobalTable.init_global_state()
---         if not global.ahm then
---         for _, player in pairs(game.players) do
---             table.insert(GlobalTable.player_and_heat_group_list__array, HeatGroupList:new())
---             table.insert(GlobalTable.player_and_gui__array, PlayerGui:new(player))
---         end
---         global.ahm = GlobalTable
---     end
--- end
-
 --- clear_old_render_objects_and_create_new
 --- rendering.draw_text(...) -> int - этот id Валиден только во время сессис, 
 --- то есть при save-load он становится НЕ Валиден, однако сам object продолжает существовать... -_-
@@ -137,16 +120,13 @@ function GlobalTable.replace_all_old_render_objects()
             --- 2 - убить heat_marker
             --- 3 - делать continue - heat_markerне будет обновляться, ну да и хер с ним сейчас
             goto continue
-            
-         end -- todo - проверка и удаление и чисто создание новой начиеки для HeatMarker 
 
+        end -- todo - проверка и удаление и чисто создание новой начиеки для HeatMarker 
 
-         local unit_number = render_target.entity.unit_number
-        local array_of_heat_marker = entity_unit_id__array_of_heat_marker[""..unit_number]
-        if (array_of_heat_marker == nil) then 
-            log ("replace_all_old_render_objects# array_of_heat_marker = nil")
-        end -- todo - проверка и хз что ещё, пусть будет
-        
+        local unit_number = render_target.entity.unit_number
+        local array_of_heat_marker = entity_unit_id__array_of_heat_marker["" .. unit_number]
+        if (array_of_heat_marker == nil) then log("replace_all_old_render_objects# array_of_heat_marker = nil") end -- todo - проверка и хз что ещё, пусть будет
+
         local heat_marker = table.remove(array_of_heat_marker, 1)
         if (heat_marker == nil) then end -- todo - проверка и хз что ещё, пусть будет
 
@@ -160,6 +140,5 @@ function GlobalTable.replace_all_old_render_objects()
     end
 
 end
-
 
 return GlobalTable
