@@ -24,6 +24,9 @@ function GlobalEventListener.register_events_handlers()
     --- ANY startup setting 
     script.on_configuration_changed(GlobalEventListener.do_on_configuration_changed_event)
 
+    --- https://lua-api.factorio.com/latest/events.html#on_player_created
+    script.on_event(defines.events.on_player_created, GlobalEventListener.do_on_player_created)
+
     script.on_event(defines.events.on_gui_click, GlobalEventListener.do_on_gui_click)
     script.on_event(defines.events.on_player_selected_area,
                     function(event) GlobalEventListener:do_on_player_selected_area(event, false) end)
@@ -41,6 +44,7 @@ function GlobalEventListener.do_on_load_event() GlobalTable.do_on_load_event() e
 function GlobalEventListener.do_on_configuration_changed_event(configurationChangedData)
     GlobalTable.do_on_configuration_changed_event(configurationChangedData)
 end
+function GlobalEventListener.do_on_player_created(event) GlobalTable.do_on_player_created(event) end
 
 -----------------------------------
 -----------------------------------
@@ -54,13 +58,16 @@ function GlobalEventListener.do_on_gui_click(gui_event)
     local player_gui = GlobalTable.get_or_create_Gui(gui_event.player_index)
     local player_groups = GlobalTable.get_or_create_heat_group_list(gui_event.player_index)
 
-    if string.find(btn_name, "->create_group") then
+    if string.find(btn_name, "->show/hide menu") then
+        PlayerGuiLogic.switch_show_or_hide_menu(player_gui)
+    elseif string.find(btn_name, "->create_group") then
         PlayerGuiLogic.set_selector_create_group(gui_event.player_index)
     elseif string.find(btn_name, "->edit_content") then
     elseif string.find(btn_name, "->delete_group") then
         -- важен порядок действий - сначала логика, и в конце gui
-        HeatGroupStoreLogic.delete_heat_group(player_groups, gui_event.element.tags.group_name)
-        PlayerGuiLogic.process_delete_group(player_gui, gui_event)
+        local heat_group_name =  gui_event.element.tags.group_name
+        HeatGroupStoreLogic.delete_heat_group(player_groups, heat_group_name)
+        PlayerGuiLogic.process_delete_group(player_gui,heat_group_name)
     end
 end
 
