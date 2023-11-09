@@ -1,11 +1,11 @@
 {
   "name": "atomicHeat-monitor",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "factorio_version": "1.1.50",
   "title": "atomicHeat-monitor",
   "author": "Searcher_k,Lasterian",
   "contact": "autominer@narod.ru",
   "homepage": "http://autominer.narod.ru/",
-  "description": "Show entity's temperature. It is useful for testing in the design of nuclear power plants",
+  "description": "Show entity's temperature",
   "dependencies": ["? optional-mod"]
 }
