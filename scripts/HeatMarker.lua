@@ -25,10 +25,10 @@ require "scripts.HeatPalettes"
 --     a = 0.1
 -- }
 local transparent = {
-    r = .3,
-    g = .3,
-    b = .3,
-    a = .1
+    r = .1,
+    g = .1,
+    b = .1,
+    a = .01
 }
 local draw_params_text = {
     target_offset = { 0, -.375 },
