@@ -24,6 +24,9 @@ function GlobalEventListener.register_events_handlers()
     --- ANY startup setting 
     script.on_configuration_changed(GlobalEventListener.do_on_configuration_changed_event)
 
+    --- https://lua-api.factorio.com/latest/events.html#on_player_created
+    script.on_event(defines.events.on_player_created, GlobalEventListener.do_on_player_created)
+
     script.on_event(defines.events.on_gui_click, GlobalEventListener.do_on_gui_click)
     script.on_event(defines.events.on_player_selected_area,
                     function(event) GlobalEventListener:do_on_player_selected_area(event, false) end)
@@ -41,11 +44,13 @@ function GlobalEventListener.do_on_load_event() GlobalTable.do_on_load_event() e
 function GlobalEventListener.do_on_configuration_changed_event(configurationChangedData)
     GlobalTable.do_on_configuration_changed_event(configurationChangedData)
 end
+function GlobalEventListener.do_on_player_created(event) GlobalTable.do_on_player_created(event) end
 
 -----------------------------------
 -----------------------------------
 -----------------------------------
 
+--- https://lua-api.factorio.com/latest/events.html#on_gui_click
 function GlobalEventListener.do_on_gui_click(gui_event)
     local btn_name = gui_event.element.name
     -- скипаем нажатия на Чужие кнопки, все наши кнопки начинаются на "ahm"
@@ -54,17 +59,20 @@ function GlobalEventListener.do_on_gui_click(gui_event)
     local player_gui = GlobalTable.get_or_create_Gui(gui_event.player_index)
     local player_groups = GlobalTable.get_or_create_heat_group_list(gui_event.player_index)
 
-    if string.find(btn_name, "->create_group") then
+    if string.find(btn_name, "->show/hide menu") then
+        PlayerGuiLogic.switch_show_or_hide_menu(player_gui)
+    elseif string.find(btn_name, "->create_group") then
         PlayerGuiLogic.set_selector_create_group(gui_event.player_index)
     elseif string.find(btn_name, "->edit_content") then
     elseif string.find(btn_name, "->delete_group") then
         -- важен порядок действий - сначала логика, и в конце gui
-        HeatGroupStoreLogic.delete_heat_group(player_groups, gui_event.element.tags.group_name)
-        PlayerGuiLogic.process_delete_group(player_gui, gui_event)
+        local heat_group_name = gui_event.element.tags.group_name
+        HeatGroupStoreLogic.delete_heat_group(player_groups, heat_group_name)
+        PlayerGuiLogic.process_delete_group(player_gui, heat_group_name)
     end
 end
 
--- https://lua-api.factorio.com/latest/events.html#on_player_selected_area
+--- https://lua-api.factorio.com/latest/events.html#on_player_selected_area
 function GlobalEventListener:do_on_player_selected_area(event, is_alt_select)
     local player_index = event.player_index
     local group_entities = event.entities
@@ -93,7 +101,7 @@ function GlobalEventListener.on_nth_tick_update_temperature()
         end
     end
 end
-
+--- https://lua-api.factorio.com/latest/events.html#on_lua_shortcut
 function GlobalEventListener.do_on_lua_shortcut(event)
     if event.prototype_name ~= GlobalEventListener.selector__shortcut_name then return end
     GlobalConroller.set_selector_tool(event.player_index)
@@ -115,6 +123,8 @@ GlobalConroller = {
     classname = "GlobalConroller"
 }
 
+--- @param player_index number
+--- @param group_entites LuaEntity[]
 function GlobalConroller.add_group_for_player(player_index, group_entites)
     local player_gui = GlobalTable.get_or_create_Gui(player_index)
     local heat_group_list = GlobalTable.get_or_create_heat_group_list(player_index)
@@ -123,6 +133,7 @@ function GlobalConroller.add_group_for_player(player_index, group_entites)
     PlayerGuiLogic.add_gui_for_heat_group(player_gui, new_heat_group)
 end
 
+--- @param player_index number
 function GlobalConroller.set_selector_tool(player_index)
     -- делаем вид, что передаём gui_event. Мимикрируем под gui_event XD
     PlayerGuiLogic.set_selector_create_group(player_index)
@@ -142,6 +153,5 @@ function GlobalConroller.show_render_ids()
     end
     return ids
 end
-
 
 return GlobalEventListener
