@@ -89,11 +89,11 @@ end
 --- approx_color4_255 ---
 -------------------------
 
-function HeatMarker.approx_color4_255(color1, color2, weight)	
+function HeatMarker.approx_color4_255(color1, color2, weight)
     r = color1.r * weight + color2.r * (1 - weight)
     g = color1.g * weight + color2.g * (1 - weight)
     b = color1.b * weight + color2.b * (1 - weight)
-    a = color1.a * weight + color2.a * (1 - weight)	
+    a = color1.a * weight + color2.a * (1 - weight)
 	  return {r=r/255, g=g/255, b=b/255, a=a/255}
 end
 
@@ -101,12 +101,12 @@ function HeatMarker.calc_color_from_palette_and_temperature (heat_palette_ranges
 	calc_color = {r=0,g=0,b=0,a=0}
 	start_temp=0
 	end_temp=1000
-	target_range=heat_palette_ranges[1]	
-	for _,range_color in pairs (heat_palette_ranges) do				
-		if temperature<=range_color.range then 
+	target_range=heat_palette_ranges[1]
+	for _,range_color in pairs (heat_palette_ranges) do
+		if temperature<=range_color.range then
 			end_temp=range_color.range
-			target_range=range_color			
-			break 
+			target_range=range_color
+			break
 		else
 			start_temp=range_color.range
 		end
@@ -115,7 +115,7 @@ function HeatMarker.calc_color_from_palette_and_temperature (heat_palette_ranges
 	return {calc_color.r,calc_color.g,calc_color.b,calc_color.a}
 end
 
-function HeatMarker.color_4_to_3(color_in)	
+function HeatMarker.color_4_to_3(color_in)
 	return {r=color_in[1],g=color_in[2],b=color_in[3]}
 end
 
@@ -128,7 +128,7 @@ function HeatMarker.approx_color_text(temperature)
      color4=HeatMarker.calc_color_from_palette_and_temperature(heat_palette.ranges_numbers,temperature)
 	 color3 =HeatMarker.color_4_to_3(color4)
    else
-      color3 = transparent 
+      color3 = transparent
    end
    return color3
 
@@ -161,8 +161,8 @@ function HeatMarker.approx_color_box(temperature)
 --    end
    if heat_palette.b_need_rects==true then
 	   color =HeatMarker.calc_color_from_palette_and_temperature(heat_palette.ranges_rects,temperature)
-   else 
-	color =transparent 
+   else
+	color =transparent
    end
    return color
 end

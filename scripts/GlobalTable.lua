@@ -8,14 +8,22 @@ GlobalTable = {
     is_loaded_from_save = false
 }
 
+function GlobalTable.do_on_player_created(event)
+    table.insert(GlobalTable.player_and_gui__array, PlayerGui:new(game.players[event.player_index]))
+end
+
 function GlobalTable.do_on_init_event()
-    log("GlobalTable.do_on_init_event() - RUN\r\n")
     if global.ahm == nil then
+        global.ahm = GlobalTable
+
+        -- кейса: создаётся сейв и нам тут делать нечего.
+        if #game.players == 0 then return end
+
+        -- кейс: мод подгружается к Существующему сейву(сейв ранее не имел мода)
         for _, player in pairs(game.players) do
             table.insert(GlobalTable.player_and_heat_group_list__array, HeatGroupList:new())
             table.insert(GlobalTable.player_and_gui__array, PlayerGui:new(player))
         end
-        global.ahm = GlobalTable
     end
 end
 
@@ -52,13 +60,8 @@ function GlobalTable.do_on_configuration_changed_event(configurationChangedData)
     elseif (our_changes.old_version == "0.0.3") then
         GlobalTable.do_on_init_event()
 
-        --- для будущего
-        -- elseif (our_changes.old_version == "0.0.4") then
-
-        -- GlobalTable.do_on_init_event()
-
-        -- else
-        -- GlobalTable.do_on_init_event()
+    elseif (our_changes.old_version == "0.0.4") then
+        GlobalTable.migration_to_0_0_5()
     end
     local k = ""
     log("GlobalTable.do_on_load_event() - END\r\n")
@@ -139,6 +142,15 @@ function GlobalTable.replace_all_old_render_objects()
         ::continue::
     end
 
+end
+-------------------
+---- Migrations ---
+-------------------
+function GlobalTable.migration_to_0_0_5()
+    for index, player_gui in ipairs(GlobalTable.player_and_gui__array) do
+        player_gui.is_menu_show = true
+        PlayerGuiLogic.add_top_menu_btn(player_gui)
+    end
 end
 
 return GlobalTable
