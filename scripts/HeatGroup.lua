@@ -1,10 +1,13 @@
 require "scripts.HeatPalettes"
 
-
+--- @class HeatGroup
+--- @field content table<string, HeatMarker>> @Map<unit_number: string, HeatMarker>
+--- @field group_name string
 HeatGroup = {}
 --- @param name string Индификатор группы + имя группы для GUI
---- @param group_entites Entity[] набор игровых сущьностей для которых группы будет показывать температуру.
-function HeatGroup:new(name, group_entites)
+--- @param group_entities LuaEntity[] набор игровых сущьностей для которых группы будет показывать температуру.
+--- @return HeatGroup
+function HeatGroup:new(name, group_entities)
     local obj = {
         classname = "HeatGroup",
         content = {}, -- :Table<unit_number: string, HeatMarker>
@@ -13,13 +16,14 @@ function HeatGroup:new(name, group_entites)
     }
 
     -- obj config
-    HeatGroupLogic.add_entities(obj, group_entites)
+    HeatGroupLogic.add_entities(obj, group_entities)
     return obj
 end
 
 HeatGroupLogic = {}
 
---- @param entity Entity
+--- @param entity LuaEntity
+--- @return nil
 function HeatGroupLogic.add_entity(heat_group, entity)
     -- кейс в выборке есть Бойлеры и реакторы, но у них нет работы с теплом, как у Атомок
     if entity.valid == false or entity.temperature == nil then return end
@@ -27,18 +31,25 @@ function HeatGroupLogic.add_entity(heat_group, entity)
     heat_group.content["" .. entity.unit_number] = HeatMarker:new(entity, temperature)
 end
 
---- @param entities Entity[]
+--- @param heat_group HeatGroup
+--- @param entities LuaEntity[]
+--- @return nil
 function HeatGroupLogic.add_entities(heat_group, entities)
     for _, entity in pairs(entities) do HeatGroupLogic.add_entity(heat_group, entity) end
 end
 
+--- @param heat_group HeatGroup
+--- @param entity LuaEntity
+--- @return nil
 function HeatGroupLogic.remove_entity(heat_group, entity)
     local entity_id = "" .. entity.unit_number
     local marker = heat_group.content[entity_id]
-    marker.destroy()
+    HeatMarkerLogic.destroy(marker)
     heat_group.content[entity_id] = nil -- garbage collector дальше сам справится
 end
 
+--- @param heat_group HeatGroup
+--- @return nil
 function HeatGroupLogic.update_temperature_values(heat_group)
     set_palette()
     for unit_number, heat_marker in pairs(heat_group.content) do

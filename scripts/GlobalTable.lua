@@ -3,19 +3,30 @@
 --- todo - refac: вынести 2 массива в PlayerState(HeatGroupList, PlayerGui) 
 GlobalTable = {
     classname = "GlobalTable",
-    player_and_heat_group_list__array = {}, -- :Table<player_index: number, HeatGroupList>
-    player_and_gui__array = {}, -- :Table<player_index: number, PlayerGui>
+    --- @type HeatGroupList[] Map<player_index: number, HeatGroupList>
+    player_and_heat_group_list__array = {},
+    --- @type PlayerGui[] Map<player_index: number, PlayerGui>
+    player_and_gui__array = {},
+    --- @type boolean
     is_loaded_from_save = false
 }
 
+function GlobalTable.do_on_player_created(event)
+    table.insert(GlobalTable.player_and_gui__array, PlayerGui:new(game.players[event.player_index]))
+end
+
 function GlobalTable.do_on_init_event()
-    log("GlobalTable.do_on_init_event() - RUN\r\n")
     if global.ahm == nil then
+        global.ahm = GlobalTable
+
+        -- кейса: создаётся сейв и нам тут делать нечего.
+        if #game.players == 0 then return end
+
+        -- кейс: мод подгружается к Существующему сейву(сейв ранее не имел мода)
         for _, player in pairs(game.players) do
             table.insert(GlobalTable.player_and_heat_group_list__array, HeatGroupList:new())
             table.insert(GlobalTable.player_and_gui__array, PlayerGui:new(player))
         end
-        global.ahm = GlobalTable
     end
 end
 
@@ -27,10 +38,10 @@ function GlobalTable.do_on_load_event()
     GlobalTable.is_loaded_from_save = true
 end
 
-function GlobalTable.do_on_configuration_changed_event(configurationChangedData)
+function GlobalTable.do_on_configuration_changed_event(configuration_changed_Data)
     log("GlobalTable.do_on_load_event() - RUN\r\n")
     -- --- пока ничего
-    local our_changes = configurationChangedData.mod_changes["atomicHeat-monitor"]
+    local our_changes = configuration_changed_Data.mod_changes["atomicHeat-monitor"]
     if our_changes == nil then return end
 
     --- 1 - наш мод подключили к существующему сейву и on_init_event() уже отрабовал, так что просто выходим
@@ -52,15 +63,9 @@ function GlobalTable.do_on_configuration_changed_event(configurationChangedData)
     elseif (our_changes.old_version == "0.0.3") then
         GlobalTable.do_on_init_event()
 
-        --- для будущего
-        -- elseif (our_changes.old_version == "0.0.4") then
-
-        -- GlobalTable.do_on_init_event()
-
-        -- else
-        -- GlobalTable.do_on_init_event()
+    elseif (our_changes.old_version == "0.0.4") then
+        GlobalTable.migration_to_0_0_5()
     end
-    local k = ""
     log("GlobalTable.do_on_load_event() - END\r\n")
 end
 
@@ -69,7 +74,6 @@ end
 ---------------
 
 function GlobalTable.get_or_create_heat_group_list(player_index)
-    -- local self = GlobalTable
     local self = global.ahm
     local heat_group_list = self.player_and_heat_group_list__array[player_index]
     if (heat_group_list == nil) then
@@ -80,7 +84,6 @@ function GlobalTable.get_or_create_heat_group_list(player_index)
 end
 function GlobalTable.get_or_create_Gui(player_index)
     if (player_index == nil) then error("player_index is nil") end
-    -- local self = GlobalTable
     local self = global.ahm
     local player_gui = self.player_and_gui__array[player_index]
     if (player_gui == nil) then
@@ -95,18 +98,17 @@ end
 --- то есть при save-load он становится НЕ Валиден, однако сам object продолжает существовать... -_-
 --- Удаляем все rendering object нашего мода и создаём новые на время этой сессии.
 function GlobalTable.replace_all_old_render_objects()
-    -- rendering.clear(ModName)
-
     local all_render_object_ids = rendering.get_all_ids(ModName) -- int[]
 
-    local entity_unit_id__array_of_heat_marker = {} --- :Table<entity_unit_id : int, HeatMarker[]>
+    --- @type table<string, HeatMarker[]> Map<entity_unit_id : int, HeatMarker[]>
+    local entity_unit_id__array_of_heat_marker = {}
     for player_index, player_heat_group_list in pairs(global.ahm.player_and_heat_group_list__array) do
         for group_name, heat_group in pairs(player_heat_group_list.content) do
-            for enity_unit_number, heat_marker in pairs(heat_group.content) do
-                if (entity_unit_id__array_of_heat_marker[enity_unit_number] == nil) then
-                    entity_unit_id__array_of_heat_marker[enity_unit_number] = {heat_marker}
+            for entity_unit_number, heat_marker in pairs(heat_group.content) do
+                if (entity_unit_id__array_of_heat_marker[entity_unit_number] == nil) then
+                    entity_unit_id__array_of_heat_marker[entity_unit_number] = {heat_marker}
                 else
-                    table.insert(entity_unit_id__array_of_heat_marker[enity_unit_number], heat_marker)
+                    table.insert(entity_unit_id__array_of_heat_marker[entity_unit_number], heat_marker)
                 end
             end
         end
@@ -138,7 +140,17 @@ function GlobalTable.replace_all_old_render_objects()
         end
         ::continue::
     end
+end
 
+-------------------
+---- Migrations ---
+-------------------
+
+function GlobalTable.migration_to_0_0_5()
+    for index, player_gui in ipairs(GlobalTable.player_and_gui__array) do
+        player_gui.is_menu_show = true
+        PlayerGuiLogic.add_top_menu_btn(player_gui)
+    end
 end
 
 return GlobalTable
