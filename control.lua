@@ -1,7 +1,7 @@
 ModName = "atomicHeat-monitor"
 
 Listener = require "scripts/GlobalEventListener"
-GlobalTable = require "scripts.GlobalTable"
+require "scripts.GlobalTable"
 require "scripts.PlayerGui"
 require "scripts.HeatGroupList"
 require "scripts.HeatGroup"
