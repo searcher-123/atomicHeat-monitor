@@ -21,7 +21,8 @@ data:extend(
             {
                 type = "selection-tool",
                 name = "heat-monitor__selector__create_group",
-                icon = "__base__/graphics/icons/heat-boiler.png",
+--                icon = "__base__/graphics/icons/heat-boiler.png",
+                icon = "__base__/graphics/icons/signal/signal_red.png",
                 icon_size = 64,
                 subgroup = "tool",
                 stack_size = 1,

@@ -1,3 +1,4 @@
+require "scripts.HeatPalettes"
 --- Класс отвечает за Создание, Настройку, Изменение, Действия кнопок GUI для Одного Определённого юзера.
 --- @class PlayerGui
 --- @field player LuaPlayer
@@ -46,24 +47,46 @@ function PlayerGuiLogic.add_top_menu_btn(player_gui)
 end
 --- @param player_gui PlayerGui
 function PlayerGuiLogic.add_main_menu_to_scene(player_gui)
+
     player_gui.root = player_gui.player.gui.screen.add {
         type = "frame",
         name = "ahm__root__frame",
         direction = "vertical",
         caption = "atomic heat monitor",
         children = {}
-    }
+    }                                       
     player_gui.heat_group_container = player_gui.root.add {
         type = "scroll-pane",
         name = "ahm__heat_group_container__scroll-pane",
-        direction = "vertical"
+        direction = "vertical",
+	caption="Heat gropus"
     }
+
     player_gui.is_menu_show = true
+
+
+    player_gui.PaletteScrollerTitle= player_gui.heat_group_container.add {
+    type="label",
+    caption="Цветовая палитра"
+    }
+
+    player_gui.PaletteScroller= player_gui.heat_group_container.add {
+        type = "drop-down",
+        name = "ahm_heat__palette_dropdown",
+        tooltip = {"btn.tooltip.show_or_hide_menu"}--need to correct
+    }
+    for name,palette in  pairs(heat_palettes) do player_gui.PaletteScroller.add_item (name.."/"..palette.name) end
+    player_gui.PaletteScroller.selected_index=1
+    player_gui.PaletteScrollerTitle= player_gui.heat_group_container.add {
+    type="label",
+    caption="Управление группами"
+    }
+
 end
 
 --- @param player_gui PlayerGui
 function PlayerGuiLogic.add_toolbar_to_main_menu(player_gui)
-    player_gui.toolbar = player_gui.root.add {
+    player_gui.toolbar = player_gui.heat_group_container.add {
         type = "scroll-pane",
         name = "ahm__toolbar",
         direction = "horizontal"

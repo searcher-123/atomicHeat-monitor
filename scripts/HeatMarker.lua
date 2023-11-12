@@ -145,9 +145,11 @@ function HeatMarkerLogic.approx_color_box(temperature)
     --        return HeatMarkerLogic.approx_color(box_blue, box_white, temperature / 500)
     --    else
     --        return HeatMarkerLogic.approx_color(box_red, box_white, (1000 - temperature) / 500)
-    --    end
+    --    end    
+
     if heat_palette.b_need_rects == true then
         color = HeatMarkerLogic.calc_color_from_palette_and_temperature(heat_palette.ranges_rects, temperature)
+
     else
         color = transparent
     end
@@ -209,7 +211,7 @@ function HeatMarkerLogic.calc_color_from_palette_and_temperature(heat_palette_ra
         end
     end
     calc_color = HeatMarkerLogic.approx_color4_255(target_range.high, target_range.low,
-            (temperature - start_temp) / (end_temp - start_temp))
+            (temperature - start_temp) / (end_temp - start_temp))    
     return { calc_color.r, calc_color.g, calc_color.b, calc_color.a }
 end
 

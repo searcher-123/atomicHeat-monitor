@@ -6,7 +6,8 @@ GlobalEventListener = {
     shortcut_hotkey_event_name = "ahm_pressed-create_group_hotkey",
     selector__shortcut_name = "heat-monitor__shortcut"
 }
-
+--жуткий глобальный костыль.номер палитры
+PaletteNumber=1
 --------------------
 --- GUI trigger ---
 --------------------
@@ -28,6 +29,10 @@ function GlobalEventListener.register_events_handlers()
     script.on_event(defines.events.on_player_created, GlobalEventListener.do_on_player_created)
 
     script.on_event(defines.events.on_gui_click, GlobalEventListener.do_on_gui_click)
+    script.on_event(defines.events.on_gui_selection_state_changed, GlobalEventListener.on_gui_selection_state_changed)
+	
+
+
     script.on_event(defines.events.on_player_selected_area,
                     function(event) GlobalEventListener:do_on_player_selected_area(event, false) end)
     script.on_event(defines.events.on_player_alt_selected_area,
@@ -71,6 +76,30 @@ function GlobalEventListener.do_on_gui_click(gui_event)
         PlayerGuiLogic.process_delete_group(player_gui, heat_group_name)
     end
 end
+
+function GlobalEventListener.on_gui_selection_state_changed(gui_event)
+    local selection_name = gui_event.element.name
+    for fname, field in pairs(gui_event.element) do
+	  log ("on_gui_selection_state_changed->"..fname)
+        end
+-- баг на баге. Не берётся имя списка (
+--    log (" on_gui_selection_state_changed"..gui_event.element)
+    -- скипаем нажатия на Чужие кнопки, все наши кнопки начинаются на "ahm"
+--    if (string.sub(selection_name, 1, 3) ~= "ahm") then return end
+
+    local player_gui = GlobalTable.get_or_create_Gui(gui_event.player_index)
+    local player_groups = GlobalTable.get_or_create_heat_group_list(gui_event.player_index)
+
+    if string.find(selection_name, "palette_dropdown") then
+--        PlayerGuiLogic.switch_show_or_hide_menu(player_gui)--set palette
+	log ("state_changed"..gui_event.element.selected_index)
+	PaletteNumber=gui_event.element.selected_index
+
+		
+    end
+end
+
+
 
 --- https://lua-api.factorio.com/latest/events.html#on_player_selected_area
 function GlobalEventListener:do_on_player_selected_area(event, is_alt_select)
