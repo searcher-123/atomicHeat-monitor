@@ -8,7 +8,9 @@ GlobalTable = {
     --- @type PlayerGui[] Map<player_index: number, PlayerGui>
     player_and_gui__array = {},
     --- @type boolean
-    is_loaded_from_save = false
+    is_loaded_from_save = false,
+    --- @type integer[] https://lua-api.factorio.com/latest/events.html#on_entity_destroyed
+    entity_on_destroy_registration_numbers = {}
 }
 
 function GlobalTable.do_on_player_created(event)
@@ -65,6 +67,8 @@ function GlobalTable.do_on_configuration_changed_event(configuration_changed_Dat
 
     elseif (our_changes.old_version == "0.0.4") then
         GlobalTable.migration_to_0_0_5()
+    elseif (our_changes.old_version == "0.0.6") then
+        GlobalTable.migration_to_0_0_7()
     end
     log("GlobalTable.do_on_load_event() - END\r\n")
 end
@@ -93,6 +97,22 @@ function GlobalTable.get_or_create_Gui(player_index)
     return player_gui
 end
 
+---@param entity LuaEntity
+function GlobalTable.register_entity_on_destory(entity)
+    table.insert(global.ahm.entity_on_destroy_registration_numbers, script.register_on_entity_destroyed(entity))
+end
+
+function GlobalTable.do_on_entity_destroyed(event)
+    local register = global.ahm.entity_on_destroy_registration_numbers
+    if (register[event.registration_number] == false) then return end
+
+    for player_index, player_heat_group_list in pairs(global.ahm.player_and_heat_group_list__array) do
+        HeatGroupStoreLogic.remove_entity_from_all_groups(player_heat_group_list, event.unit_number)
+        -- HeatGroupStoreLogic.clear_empty_heat_groups(player_heat_group_list) -- todo impl
+    end
+
+    register[event.registration_number] = nil
+end
 --- clear_old_render_objects_and_create_new
 --- rendering.draw_text(...) -> int - этот id Валиден только во время сессис, 
 --- то есть при save-load он становится НЕ Валиден, однако сам object продолжает существовать... -_-
@@ -127,7 +147,10 @@ function GlobalTable.replace_all_old_render_objects()
 
         local unit_number = render_target.entity.unit_number
         local array_of_heat_marker = entity_unit_id__array_of_heat_marker["" .. unit_number]
-        if (array_of_heat_marker == nil) then log("replace_all_old_render_objects# array_of_heat_marker = nil") end -- todo - проверка и хз что ещё, пусть будет
+        if (array_of_heat_marker == nil) then
+            log("replace_all_old_render_objects# array_of_heat_marker = nil")
+            return
+        end -- todo - проверка и хз что ещё, пусть будет
 
         local heat_marker = table.remove(array_of_heat_marker, 1)
         if (heat_marker == nil) then end -- todo - проверка и хз что ещё, пусть будет
@@ -152,5 +175,6 @@ function GlobalTable.migration_to_0_0_5()
         PlayerGuiLogic.add_top_menu_btn(player_gui)
     end
 end
+function GlobalTable.migration_to_0_0_7() global.ahm.entity_on_destroy_registration_numbers = {} end
 
 return GlobalTable

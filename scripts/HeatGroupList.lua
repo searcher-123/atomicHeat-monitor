@@ -48,3 +48,40 @@ function HeatGroupStoreLogic.delete_heat_group(heat_group_list, heat_group_name)
     end
     heat_group_list.content[heat_group_name] = nil
 end
+--- @param heat_group_list HeatGroupList
+--- @param delete_entity_unit_number string
+function HeatGroupStoreLogic.remove_entity_from_all_groups(heat_group_list, delete_entity_unit_number)
+
+    --- @type table<HeatGroup, string>[] группа и entity.unit_number который нужно удалить из группы. 
+    local modify_heat_groups = {}
+
+    for group_name, heat_group in pairs(heat_group_list.content) do
+        for entity_unit_number, heat_marker in pairs(heat_group.content) do
+            log("lh : " .. entity_unit_number .. " - " .. delete_entity_unit_number .. "\r\n")
+            if (entity_unit_number == "" .. delete_entity_unit_number) then
+                table.insert(modify_heat_groups, {heat_group, entity_unit_number})
+                goto next_group
+                log("lh : " .. "inside" .. "\r\n")
+            end
+        end
+        ::next_group::
+    end
+    for index, pair in ipairs(modify_heat_groups) do
+        local heat_group = pair[1]
+        local entity_unit_number = pair[2]
+        HeatGroupLogic.remove_entity(heat_group, entity_unit_number)
+    end
+end
+
+ -- todo impl
+-- --- @param heat_group_list HeatGroupList
+-- --- @param heat_group_name string
+-- --- @return boolean - былали удалена группа или нет
+-- function HeatGroupStoreLogic.clear_empty_heat_groups(heat_group_list)
+--     local heat_group = heat_group_list.content[heat_group_name]
+--     if (#heat_group.content > 0) then
+--         return false
+--     end
+    
+--     return true
+-- end

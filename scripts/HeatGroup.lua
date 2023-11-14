@@ -29,6 +29,7 @@ function HeatGroupLogic.add_entity(heat_group, entity)
     if entity.valid == false or entity.temperature == nil then return end
     local temperature = HeatMarker.calc_temperature_for_entity(entity)
     heat_group.content["" .. entity.unit_number] = HeatMarker:new(entity, temperature)
+        GlobalTable.register_entity_on_destory(entity)
 end
 
 --- @param heat_group HeatGroup
@@ -39,11 +40,12 @@ function HeatGroupLogic.add_entities(heat_group, entities)
 end
 
 --- @param heat_group HeatGroup
---- @param entity LuaEntity
+--- @param entity_unit_number string | integer
 --- @return nil
-function HeatGroupLogic.remove_entity(heat_group, entity)
-    local entity_id = "" .. entity.unit_number
+function HeatGroupLogic.remove_entity(heat_group, entity_unit_number)
+    local entity_id = "" .. entity_unit_number
     local marker = heat_group.content[entity_id]
+    if (marker == nil) then return end
     HeatMarkerLogic.destroy(marker)
     heat_group.content[entity_id] = nil -- garbage collector дальше сам справится
 end

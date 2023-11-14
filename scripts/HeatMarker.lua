@@ -1,6 +1,5 @@
 require "scripts.HeatPalettes"
 
-
 -------------------
 --- Draw Params ---
 -------------------
@@ -31,7 +30,7 @@ local transparent = {
     a = .01
 }
 local draw_params_text = {
-    target_offset = { 0, -.375 },
+    target_offset = {0, -.375},
     forces = {},
     scale = 1.125,
     scale_with_zoom = false,
@@ -39,7 +38,7 @@ local draw_params_text = {
     filled = true
 }
 local draw_params_box = {
-    target_offset = { .2, -.375 },
+    target_offset = {.2, -.375},
     forces = {},
     scale = 1.125,
     scale_with_zoom = true,
@@ -82,10 +81,7 @@ end
 --- prvate API fro HeatMarker ---
 ----------------------------------
 
-function HeatMarker.calc_temperature_for_entity(entity)
-    return math.floor(entity.temperature)
-end
-
+function HeatMarker.calc_temperature_for_entity(entity) return math.floor(entity.temperature) end
 
 function HeatMarker.new_heat_text(heat_entity, temperature)
     draw_params_text.color = HeatMarkerLogic.approx_color_text(temperature)
@@ -96,23 +92,14 @@ function HeatMarker.new_heat_text(heat_entity, temperature)
     return rendering.draw_text(draw_params_text)
 end
 
-
 function HeatMarker.new_heat_box(heat_entity, temperature)
     draw_params_box.color = HeatMarkerLogic.approx_color_box(temperature)
     draw_params_box.left_top = heat_entity.selection_box.left_top
     draw_params_box.right_bottom = heat_entity.selection_box.right_bottom
     draw_params_box.surface = heat_entity.surface
-    draw_params_box.target = heat_entity -- это важно, для обновления rendering_object.id после sale-load
     draw_params_box.forces[1] = heat_entity.force
     return rendering.draw_rectangle(draw_params_box)
 end
-
-
-
-
-
-
-
 
 HeatMarkerLogic = {}
 -----------------
@@ -136,7 +123,6 @@ function HeatMarkerLogic.approx_color_text(temperature)
     -- end
 end
 
-
 ----------------
 --- GUI box ---
 ----------------
@@ -156,10 +142,7 @@ function HeatMarkerLogic.approx_color_box(temperature)
     return color
 end
 
-
-function HeatMarkerLogic.calc_temperature_for_entity(entity)
-    return math.floor(entity.temperature)
-end
+function HeatMarkerLogic.calc_temperature_for_entity(entity) return math.floor(entity.temperature) end
 
 ----------------------------------------------------
 --- mixing from two colors. colors  in range 0-1 ---
@@ -179,7 +162,7 @@ end
 --------------------------------------------
 
 function HeatMarkerLogic.approx_color4_255(color1, color2, weight)
-   return {
+    return {
         r = color1.r * weight + color2.r * (1 - weight),
         g = color1.g * weight + color2.g * (1 - weight),
         b = color1.b * weight + color2.b * (1 - weight),
@@ -211,8 +194,8 @@ function HeatMarkerLogic.calc_color_from_palette_and_temperature(heat_palette_ra
         end
     end
     calc_color = HeatMarkerLogic.approx_color4_255(target_range.high, target_range.low,
-            (temperature - start_temp) / (end_temp - start_temp))    
-    return { calc_color.r, calc_color.g, calc_color.b, calc_color.a }
+                                                   (temperature - start_temp) / (end_temp - start_temp))
+    return {calc_color.r, calc_color.g, calc_color.b, calc_color.a}
 end
 
 --------------------------------------------
@@ -226,9 +209,6 @@ function HeatMarkerLogic.color_4_to_3(color_in)
         b = color_in[3]
     }
 end
-                                        
-
-
 
 --- @param heat_marker HeatMarker
 function HeatMarkerLogic.update_temperature_overlay(heat_marker)
@@ -247,6 +227,6 @@ end
 
 --- @param heat_marker HeatMarker
 function HeatMarkerLogic.destroy(heat_marker)
-    rendering.destroy(heat_marker.gui_box_id)
-    rendering.destroy(heat_marker.gui_text_id)
+    if (rendering.is_valid(heat_marker.gui_box_id) == true) then rendering.destroy(heat_marker.gui_box_id) end
+    if (rendering.is_valid(heat_marker.gui_text_id) == false == true) then rendering.destroy(heat_marker.gui_text_id) end
 end
