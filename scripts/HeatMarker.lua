@@ -228,5 +228,5 @@ end
 --- @param heat_marker HeatMarker
 function HeatMarkerLogic.destroy(heat_marker)
     if (rendering.is_valid(heat_marker.gui_box_id) == true) then rendering.destroy(heat_marker.gui_box_id) end
-    if (rendering.is_valid(heat_marker.gui_text_id) == false == true) then rendering.destroy(heat_marker.gui_text_id) end
+    if (rendering.is_valid(heat_marker.gui_text_id) == true) then rendering.destroy(heat_marker.gui_text_id) end
 end

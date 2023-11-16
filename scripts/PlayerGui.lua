@@ -105,7 +105,7 @@ end
 
 --- @param player_gui PlayerGui
 function PlayerGuiLogic.switch_show_or_hide_menu(player_gui)
-    if player_gui.root == nil then
+    if player_gui.root == nil  or player_gui.root.valid == false then
         PlayerGuiLogic.get_or_create_scene_menu_root(player_gui)
     elseif player_gui.is_menu_show == true then
         player_gui.root.visible = false
@@ -121,7 +121,7 @@ end
 --- @param player_gui PlayerGui
 --- @return LuaGuiElement
 function PlayerGuiLogic.get_or_create_scene_menu_root(player_gui)
-    if player_gui.root == nil then
+    if player_gui.root == nil  or player_gui.root.valid == false then
         PlayerGuiLogic.add_main_menu_to_scene(player_gui)
         PlayerGuiLogic.add_toolbar_to_main_menu(player_gui)
     end

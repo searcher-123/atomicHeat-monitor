@@ -160,6 +160,8 @@ function GlobalConroller.add_group_for_player(player_index, group_entites)
     local heat_group_list = GlobalTable.get_or_create_heat_group_list(player_index)
 
     local new_heat_group = HeatGroupStoreLogic.create_heat_group(heat_group_list, group_entites)
+
+    if player_gui.root == nil then PlayerGuiLogic.get_or_create_scene_menu_root(player_gui) end
     PlayerGuiLogic.add_gui_for_heat_group(player_gui, new_heat_group)
 end
 

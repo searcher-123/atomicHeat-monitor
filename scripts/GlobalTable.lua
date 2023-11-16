@@ -37,7 +37,12 @@ end
 function GlobalTable.do_on_load_event()
     GlobalTable.player_and_heat_group_list__array = global.ahm.player_and_heat_group_list__array
     GlobalTable.player_and_gui__array = global.ahm.player_and_gui__array
-    GlobalTable.is_loaded_from_save = true
+    GlobalTable.is_loaded_from_save = true 
+
+    -- кейс - загружаем существующий сценарий и весь наш существующий GUI уже ушёл в лес
+    if #GlobalTable.player_and_gui__array >0 and GlobalTable.player_and_gui__array[1].player.valid == false then
+        -- todo - починить сценарии
+    end
 end
 
 function GlobalTable.do_on_configuration_changed_event(configuration_changed_Data)
