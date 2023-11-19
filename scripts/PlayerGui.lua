@@ -21,6 +21,9 @@ function PlayerGui:new(player)
 
     -- config self
     PlayerGuiLogic.add_top_menu_btn(obj)
+
+    local heat_list = GlobalTable.get_or_create_heat_group_list(player.index)
+    for index, heat_group in pairs(heat_list.content) do PlayerGuiLogic.add_gui_for_heat_group(obj, heat_group) end
     return obj
 end
 
@@ -38,6 +41,7 @@ end
 
 --- @param player_gui PlayerGui
 function PlayerGuiLogic.add_top_menu_btn(player_gui)
+    if player_gui.player.gui.top["ahm__menu__->show/hide menu"] ~= nil then return end
     player_gui.player.gui.top.add {
         type = "sprite-button",
         name = "ahm__menu__->show/hide menu",
@@ -47,6 +51,11 @@ function PlayerGuiLogic.add_top_menu_btn(player_gui)
 end
 --- @param player_gui PlayerGui
 function PlayerGuiLogic.add_main_menu_to_scene(player_gui)
+    if player_gui.player.gui.screen["ahm__root__frame"] ~= nil then
+        player_gui.root = player_gui.player.gui.screen["ahm__root__frame"]
+        player_gui.heat_group_container = player_gui.root["ahm__heat_group_container__scroll-pane"]
+        return
+    end
 
     player_gui.root = player_gui.player.gui.screen.add {
         type = "frame",
@@ -54,38 +63,41 @@ function PlayerGuiLogic.add_main_menu_to_scene(player_gui)
         direction = "vertical",
         caption = "atomic heat monitor",
         children = {}
-    }                                       
+    }
     player_gui.heat_group_container = player_gui.root.add {
         type = "scroll-pane",
         name = "ahm__heat_group_container__scroll-pane",
         direction = "vertical",
-	caption="Heat gropus"
+        caption = "Heat gropus"
     }
 
     player_gui.is_menu_show = true
 
-
-    player_gui.PaletteScrollerTitle= player_gui.heat_group_container.add {
-    type="label",
-    caption="Цветовая палитра"
+    player_gui.PaletteScrollerTitle = player_gui.heat_group_container.add {
+        type = "label",
+        caption = "Цветовая палитра"
     }
 
-    player_gui.PaletteScroller= player_gui.heat_group_container.add {
+    player_gui.PaletteScroller = player_gui.heat_group_container.add {
         type = "drop-down",
         name = "ahm_heat__palette_dropdown",
-        tooltip = {"btn.tooltip.show_or_hide_menu"}--need to correct
+        tooltip = {"btn.tooltip.show_or_hide_menu"} -- need to correct
     }
-    for name,palette in  pairs(heat_palettes) do player_gui.PaletteScroller.add_item (name.."/"..palette.name) end
-    player_gui.PaletteScroller.selected_index=1
-    player_gui.PaletteScrollerTitle= player_gui.heat_group_container.add {
-    type="label",
-    caption="Управление группами"
+    for name, palette in pairs(heat_palettes) do player_gui.PaletteScroller.add_item(name .. "/" .. palette.name) end
+    player_gui.PaletteScroller.selected_index = 1
+    player_gui.PaletteScrollerTitle = player_gui.heat_group_container.add {
+        type = "label",
+        caption = "Управление группами"
     }
 
 end
 
 --- @param player_gui PlayerGui
 function PlayerGuiLogic.add_toolbar_to_main_menu(player_gui)
+    if player_gui.player.gui.top["ahm__toolbar"] ~= nil then
+        player_gui.toolbar = player_gui.player.gui.top["ahm__toolbar"]
+        return
+    end
     player_gui.toolbar = player_gui.heat_group_container.add {
         type = "scroll-pane",
         name = "ahm__toolbar",
@@ -105,23 +117,19 @@ end
 
 --- @param player_gui PlayerGui
 function PlayerGuiLogic.switch_show_or_hide_menu(player_gui)
-    if player_gui.root == nil  or player_gui.root.valid == false then
+    if player_gui.root == nil or player_gui.root.valid == false then
         PlayerGuiLogic.get_or_create_scene_menu_root(player_gui)
-    elseif player_gui.is_menu_show == true then
+    elseif player_gui.root.visible == true then
         player_gui.root.visible = false
-        player_gui.is_menu_show = false
-    elseif player_gui.is_menu_show == false then
+    elseif player_gui.root.visible == false then
         player_gui.root.visible = true
-        player_gui.is_menu_show = true
-    elseif player_gui.is_menu_show == nil then
-        log("player_gui.is_menu_show == nil # player_gui.player.index=" .. player_gui.player.index)
     end
 end
 
 --- @param player_gui PlayerGui
 --- @return LuaGuiElement
 function PlayerGuiLogic.get_or_create_scene_menu_root(player_gui)
-    if player_gui.root == nil  or player_gui.root.valid == false then
+    if player_gui.root == nil or player_gui.root.valid == false then
         PlayerGuiLogic.add_main_menu_to_scene(player_gui)
         PlayerGuiLogic.add_toolbar_to_main_menu(player_gui)
     end
@@ -131,9 +139,13 @@ end
 --- @param player_gui PlayerGui
 --- @param heat_group HeatGroup
 function PlayerGuiLogic.add_gui_for_heat_group(player_gui, heat_group)
+    PlayerGuiLogic.add_main_menu_to_scene(player_gui) -- убедимся что оно существует и работает коррект во всех ебучих случаях
+    local group_gui_element_name = "ahm__heat_group_root_#" .. heat_group.group_name
+    if (player_gui.heat_group_container[group_gui_element_name] ~= nil) then return end
+
     local group = player_gui.heat_group_container.add {
         type = "frame",
-        name = "ahm__heat_group_root_#" .. heat_group.group_name,
+        name = group_gui_element_name,
         direction = "horizontal",
         caption = heat_group.group_name
     }

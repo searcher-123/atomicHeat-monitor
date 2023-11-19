@@ -37,11 +37,15 @@ end
 function GlobalTable.do_on_load_event()
     GlobalTable.player_and_heat_group_list__array = global.ahm.player_and_heat_group_list__array
     GlobalTable.player_and_gui__array = global.ahm.player_and_gui__array
-    GlobalTable.is_loaded_from_save = true 
+    GlobalTable.is_loaded_from_save = true
 
     -- кейс - загружаем существующий сценарий и весь наш существующий GUI уже ушёл в лес
-    if #GlobalTable.player_and_gui__array >0 and GlobalTable.player_and_gui__array[1].player.valid == false then
-        -- todo - починить сценарии
+    if #GlobalTable.player_and_gui__array > 0 and GlobalTable.player_and_gui__array[1].player.valid == false then
+        --- @type table<integer, PlayerGui>
+        local recreated_guis = {}
+        for player_index, player_gui in ipairs(GlobalTable.player_and_gui__array) do
+            -- recreated_guis[player_index] = PlayerGui:new()
+        end
     end
 end
 
@@ -95,7 +99,7 @@ function GlobalTable.get_or_create_Gui(player_index)
     if (player_index == nil) then error("player_index is nil") end
     local self = global.ahm
     local player_gui = self.player_and_gui__array[player_index]
-    if (player_gui == nil) then
+    if (player_gui == nil or player_gui.player.valid == false) then
         player_gui = PlayerGui:new(game.players[player_index])
         self.player_and_gui__array[player_index] = player_gui
     end
