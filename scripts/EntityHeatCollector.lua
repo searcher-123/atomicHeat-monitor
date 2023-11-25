@@ -11,7 +11,9 @@ EntityHeatCollector = {}
 function EntityHeatCollector:new(heat_group_name, entities)
     --- @type table<EntityHeatDataColumn>
     local columns = {}
-    for index, entity in ipairs(entities) do table.insert(columns, EntityHeatDataColumn:new(entity)) end
+    for index, entity in ipairs(entities) do
+        if entity.valid == true then table.insert(columns, EntityHeatDataColumn:new(entity)) end
+    end
 
     return {
         --- @type string
@@ -60,7 +62,8 @@ FileWriter = {}
 
 --- @param collector EntityHeatCollector
 function FileWriter.flush_to_file(collector)
-
+    
+    util.
     local player_name = "Lasteria"
     local filename = 'ahm__' .. player_name .. '__' .. collector.heat_group_name .. '__#' .. collector._record_count ..
                          '.csv'
