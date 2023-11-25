@@ -79,5 +79,23 @@ data:extend(
                 height = 40,
                 scale = 1,
             },
+            {
+                type = "sprite",
+                name = "start_record",
+                filename = "__atomicHeat-monitor__/graphics/start_record.png",
+                priority = "extra-high-no-scale",
+                width = 100,
+                height = 100,
+                scale = 1,
+            },
+            {
+                type = "sprite",
+                name = "stop_record",
+                filename = "__atomicHeat-monitor__/graphics/stop_record_2.png",
+                priority = "extra-high-no-scale",
+                width = 96,
+                height = 96,
+                scale = 1,
+            },
         }
 )

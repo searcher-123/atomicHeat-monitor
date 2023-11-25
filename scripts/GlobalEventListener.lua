@@ -65,6 +65,8 @@ function GlobalEventListener.do_on_gui_click(gui_event)
 
     local player_gui = GlobalTable.get_or_create_Gui(gui_event.player_index)
     local player_groups = GlobalTable.get_or_create_heat_group_list(gui_event.player_index)
+    --- @type string | nil - если в GUI казан этот аргумент, то он будет тут, иначе nil
+    local heat_group_name = gui_event.element.tags.group_name
 
     if string.find(btn_name, "->show/hide menu") then
         PlayerGuiLogic.switch_show_or_hide_menu(player_gui)
@@ -73,9 +75,14 @@ function GlobalEventListener.do_on_gui_click(gui_event)
     elseif string.find(btn_name, "->edit_content") then
     elseif string.find(btn_name, "->delete_group") then
         -- важен порядок действий - сначала логика, и в конце gui
-        local heat_group_name = gui_event.element.tags.group_name
         HeatGroupStoreLogic.delete_heat_group(player_groups, heat_group_name)
         PlayerGuiLogic.process_delete_group(player_gui, heat_group_name)
+    elseif string.find(btn_name, "->start_record") then
+        local recorder = player_groups.content[heat_group_name].recorder
+        EntityHeatCollectorLogic.start_record(recorder)
+    elseif string.find(btn_name, "->stop_record") then
+        local recorder = player_groups.content[heat_group_name].recorder
+        EntityHeatCollectorLogic.stop_record(recorder)
     end
 end
 
@@ -120,7 +127,7 @@ function GlobalEventListener:do_on_player_selected_area(event, is_alt_select)
     end
 end
 
-function GlobalEventListener.on_nth_tick_update_temperature()
+function GlobalEventListener.on_nth_tick_update_temperature(event)
     if (GlobalTable.is_loaded_from_save) then
         GlobalTable.replace_all_old_render_objects()
         GlobalTable.is_loaded_from_save = false
@@ -128,6 +135,9 @@ function GlobalEventListener.on_nth_tick_update_temperature()
     for player_index, player_heat_groups in pairs(GlobalTable.player_and_heat_group_list__array) do
         for heat_group_name, heat_group in pairs(player_heat_groups.content) do
             HeatGroupLogic.update_temperature_values(heat_group)
+            if heat_group.recorder.is_recording then
+                EntityHeatCollectorLogic.do_every_tick(heat_group.recorder, event.tick)
+            end
         end
     end
 end

@@ -143,23 +143,39 @@ function PlayerGuiLogic.add_gui_for_heat_group(player_gui, heat_group)
     local group_gui_element_name = "ahm__heat_group_root_#" .. heat_group.group_name
     if (player_gui.heat_group_container[group_gui_element_name] ~= nil) then return end
 
+    local name_prefix = "ahm__heat_group_root_#" .. heat_group.group_name
+
+    --- @type LuaGuiElement
     local group = player_gui.heat_group_container.add {
         type = "frame",
         name = group_gui_element_name,
         direction = "horizontal",
         caption = heat_group.group_name
     }
-    -- group.add {
-    --     type = "sprite-button",
-    --     name = "ahm__heat_group_root_#" .. heat_group.group_name .. "__->edit_content",
-    --     sprite = "heat_group_add_blueprint_icon",
-    --     tooltip = "Выбрать/Перезаписать сущности для группы (Comming soon! :D)" -- TODO local text resource
-    -- }
+
     group.add {
         type = "sprite-button",
-        name = "ahm__heat_group_root_#" .. heat_group.group_name .. "__->delete_group",
+        name = name_prefix .. "__->delete_group",
         sprite = "heat_group_delete_icon",
         tooltip = {"btn.tooltip.delete_heat_group"},
+        tags = {
+            group_name = heat_group.group_name
+        }
+    }
+    group.add {
+        type = "sprite-button",
+        name = name_prefix .. "__->start_record",
+        sprite = "start_record",
+        tooltip = {"btn.tooltip.start_record"},
+        tags = {
+            group_name = heat_group.group_name
+        }
+    }
+    group.add {
+        type = "sprite-button",
+        name = name_prefix .. "__->stop_record",
+        sprite = "stop_record",
+        tooltip = {"btn.tooltip.stop_record"},
         tags = {
             group_name = heat_group.group_name
         }

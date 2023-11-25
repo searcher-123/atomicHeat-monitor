@@ -69,7 +69,6 @@ function GlobalTable.do_on_configuration_changed_event(configuration_changed_Dat
     elseif (our_changes.old_version == "0.0.2") then
         PlayerGuiLogic.destrpy_gui_v_0_0_2()
         GlobalTable.do_on_init_event()
-        local k = ""
         log("GlobalTable.do_on_load_event() - END\r\n")
     elseif (our_changes.old_version == "0.0.3") then
         GlobalTable.do_on_init_event()
@@ -78,6 +77,10 @@ function GlobalTable.do_on_configuration_changed_event(configuration_changed_Dat
         GlobalTable.migration_to_0_0_5()
     elseif (our_changes.old_version == "0.0.6") then
         GlobalTable.migration_to_0_0_7()
+    elseif (our_changes.old_version == "0.0.7"
+        or our_changes.old_version == "0.0.8"
+        or our_changes.old_version == "0.0.9") then
+        GlobalTable.migration_to_0_0_9()
     end
     log("GlobalTable.do_on_load_event() - END\r\n")
 end
@@ -185,5 +188,14 @@ function GlobalTable.migration_to_0_0_5()
     end
 end
 function GlobalTable.migration_to_0_0_7() global.ahm.entity_on_destroy_registration_numbers = {} end
+function GlobalTable.migration_to_0_0_9()
+    for index, group_list in ipairs(global.ahm.player_and_heat_group_list__array) do
+        for group_name, group in pairs(group_list.content) do
+
+            local group_entities = HeatGroupLogic.collect_all_entites_for_group(group)
+            group.recorder = EntityHeatCollector:new(group_name, group_entities)
+        end
+    end
+end
 
 return GlobalTable

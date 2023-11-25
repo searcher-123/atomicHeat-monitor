@@ -142,6 +142,8 @@ function HeatMarkerLogic.approx_color_box(temperature)
     return color
 end
 
+--- @param entity LuaEntity
+--- @return integer
 function HeatMarkerLogic.calc_temperature_for_entity(entity) return math.floor(entity.temperature) end
 
 ----------------------------------------------------

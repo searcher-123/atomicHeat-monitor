@@ -3,6 +3,7 @@ require "scripts.HeatPalettes"
 --- @class HeatGroup
 --- @field content table<string, HeatMarker>> @Map<unit_number: string, HeatMarker>
 --- @field group_name string
+--- @field recorder EntityHeatCollector
 HeatGroup = {}
 --- @param name string Индификатор группы + имя группы для GUI
 --- @param group_entities LuaEntity[] набор игровых сущьностей для которых группы будет показывать температуру.
@@ -12,7 +13,8 @@ function HeatGroup:new(name, group_entities)
         classname = "HeatGroup",
         content = {}, -- :Table<unit_number: string, HeatMarker>
         -- __entities = {}, -- :Table<unit_number: string, Entity>
-        group_name = name
+        group_name = name,
+        recorder = EntityHeatCollector:new(name, group_entities)
     }
 
     -- obj config
@@ -57,4 +59,22 @@ function HeatGroupLogic.update_temperature_values(heat_group)
     for unit_number, heat_marker in pairs(heat_group.content) do
         HeatMarkerLogic.update_temperature_overlay(heat_marker)
     end
+end
+
+--- @param heat_group HeatGroup
+--- @return LuaEntity[]
+function HeatGroupLogic.collect_all_entites_for_group(heat_group)
+    local id_and_entity = {}
+    for unit_number, heat_marker in pairs(heat_group.content) do
+        -- local unit_number = heat_marker.lua_entity.unit_number
+        if id_and_entity[unit_number] == nil then
+            id_and_entity[unit_number] = heat_marker.lua_entity
+        end
+    end
+    --- @type LuaEntity[]
+    local rsl = {}
+    for unit_number, entity in pairs(id_and_entity) do
+        table.insert(rsl, entity)
+    end
+    return rsl
 end
