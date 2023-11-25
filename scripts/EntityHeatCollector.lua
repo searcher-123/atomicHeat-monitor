@@ -62,8 +62,6 @@ FileWriter = {}
 
 --- @param collector EntityHeatCollector
 function FileWriter.flush_to_file(collector)
-    
-    util.
     local player_name = "Lasteria"
     local filename = 'ahm__' .. player_name .. '__' .. collector.heat_group_name .. '__#' .. collector._record_count ..
                          '.csv'
