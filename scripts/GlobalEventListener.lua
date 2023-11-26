@@ -67,6 +67,7 @@ function GlobalEventListener.do_on_gui_click(gui_event)
     local player_groups = GlobalTable.get_or_create_heat_group_list(gui_event.player_index)
     --- @type string | nil - если в GUI казан этот аргумент, то он будет тут, иначе nil
     local heat_group_name = gui_event.element.tags.group_name
+    local group_gui_element_name = "ahm__heat_group_root_#" .. heat_group_name        
 
     if string.find(btn_name, "->show/hide menu") then
         PlayerGuiLogic.switch_show_or_hide_menu(player_gui)
@@ -78,10 +79,13 @@ function GlobalEventListener.do_on_gui_click(gui_event)
         HeatGroupStoreLogic.delete_heat_group(player_groups, heat_group_name)
         PlayerGuiLogic.process_delete_group(player_gui, heat_group_name)
     elseif string.find(btn_name, "->start_record") then
-        local recorder = player_groups.content[heat_group_name].recorder
+        local recorder = player_groups.content[heat_group_name].recorder        
         EntityHeatCollectorLogic.start_record(recorder)
     elseif string.find(btn_name, "->stop_record") then
-        local recorder = player_groups.content[heat_group_name].recorder
+        local recorder = player_groups.content[heat_group_name].recorder--
+        local lbl_name=string.gsub(btn_name,"->stop_record","->label")
+        --считать имя файла.
+        recorder.heat_group_name=player_gui.heat_group_container[group_gui_element_name][lbl_name].text                
         EntityHeatCollectorLogic.stop_record(recorder)
     end
 end

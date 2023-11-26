@@ -149,8 +149,8 @@ function PlayerGuiLogic.add_gui_for_heat_group(player_gui, heat_group)
     local group = player_gui.heat_group_container.add {
         type = "frame",
         name = group_gui_element_name,
-        direction = "horizontal",
-        caption = heat_group.group_name
+        direction = "horizontal"
+--,        caption = heat_group.group_name
     }
 
     group.add {
@@ -171,11 +171,22 @@ function PlayerGuiLogic.add_gui_for_heat_group(player_gui, heat_group)
             group_name = heat_group.group_name
         }
     }
+    
     group.add {
         type = "sprite-button",
         name = name_prefix .. "__->stop_record",
         sprite = "stop_record",
         tooltip = {"btn.tooltip.stop_record"},
+        tags = {
+            group_name = heat_group.group_name
+        }
+    }
+        
+    group.add {
+        type = "textfield",
+        name = name_prefix .. "__->label",
+        tooltip = {"btn.tooltip.group_label"},
+	text=heat_group.group_name,	
         tags = {
             group_name = heat_group.group_name
         }
