@@ -36,7 +36,7 @@ function GlobalEventListener.register_events_handlers()
     script.on_event(defines.events.on_player_alt_selected_area,
                     function(event) GlobalEventListener:do_on_player_selected_area(event, true) end)
 
-    script.on_nth_tick(60, GlobalEventListener.on_nth_tick_update_temperature)
+    script.on_nth_tick(1, GlobalEventListener.on_nth_tick_update_temperature)
 
     script.on_event(defines.events.on_lua_shortcut, GlobalEventListener.do_on_lua_shortcut)
     script.on_event(GlobalEventListener.shortcut_hotkey_event_name, GlobalEventListener.do_on_shortcut_hotkey_pressed)
@@ -60,14 +60,18 @@ function GlobalEventListener.do_on_player_created(event) GlobalTable.do_on_playe
 --- https://lua-api.factorio.com/latest/events.html#on_gui_click
 function GlobalEventListener.do_on_gui_click(gui_event)
     local btn_name = gui_event.element.name
+    log ("btn_name "..btn_name)
     -- скипаем нажатия на Чужие кнопки, все наши кнопки начинаются на "ahm"
     if (string.sub(btn_name, 1, 3) ~= "ahm") then return end
 
     local player_gui = GlobalTable.get_or_create_Gui(gui_event.player_index)
     local player_groups = GlobalTable.get_or_create_heat_group_list(gui_event.player_index)
-    --- @type string | nil - если в GUI казан этот аргумент, то он будет тут, иначе nil
+    --вдруг нажато то, что не входит в группы
+--    if (nil==gui_event.element.tags) or (nil==gui_event.element.tags.group_name)  then return end
+
+    --- @type string | nil - если в GUI казан этот аргумент, то он будет тут, иначе nil    
     local heat_group_name = gui_event.element.tags.group_name
-    local group_gui_element_name = "ahm__heat_group_root_#" .. heat_group_name        
+    
 
     if string.find(btn_name, "->show/hide menu") then
         PlayerGuiLogic.switch_show_or_hide_menu(player_gui)
@@ -80,8 +84,11 @@ function GlobalEventListener.do_on_gui_click(gui_event)
         PlayerGuiLogic.process_delete_group(player_gui, heat_group_name)
     elseif string.find(btn_name, "->start_record") then
         local recorder = player_groups.content[heat_group_name].recorder        
+        recorder.decimator= player_gui.heat_group_container.ahm_heat__ReducerText_textfield.text
+        
         EntityHeatCollectorLogic.start_record(recorder)
     elseif string.find(btn_name, "->stop_record") then
+        local group_gui_element_name = "ahm__heat_group_root_#" .. heat_group_name        
         local recorder = player_groups.content[heat_group_name].recorder--
         local lbl_name=string.gsub(btn_name,"->stop_record","->label")
         --считать имя файла.

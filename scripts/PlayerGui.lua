@@ -61,7 +61,7 @@ function PlayerGuiLogic.add_main_menu_to_scene(player_gui)
         type = "frame",
         name = "ahm__root__frame",
         direction = "vertical",
-        caption = "atomic heat monitor",
+        caption = {"frm.lbl.name"},
         children = {}
     }
     player_gui.heat_group_container = player_gui.root.add {
@@ -73,21 +73,36 @@ function PlayerGuiLogic.add_main_menu_to_scene(player_gui)
 
     player_gui.is_menu_show = true
 
+    player_gui.ReducerTitle = player_gui.heat_group_container.add {
+        type = "label",
+        caption = {"lbl.caption.ReducerTitle"}
+    }
+
+    player_gui.ReducerText = player_gui.heat_group_container.add {
+        type = "textfield",
+        name = "ahm_heat__ReducerText_textfield",
+        tooltip = {"btn.tooltip.ReducerText_textfield"},
+        text=30 ,
+        numeric=true
+
+    }
+
     player_gui.PaletteScrollerTitle = player_gui.heat_group_container.add {
         type = "label",
-        caption = "Цветовая палитра"
+        caption = {"lbl.caption.PaletteScrollerTitle"} 
     }
 
     player_gui.PaletteScroller = player_gui.heat_group_container.add {
         type = "drop-down",
         name = "ahm_heat__palette_dropdown",
-        tooltip = {"btn.tooltip.show_or_hide_menu"} -- need to correct
+        tooltip = {"btn.tooltip.PaletteScroller"} 
     }
     for name, palette in pairs(heat_palettes) do player_gui.PaletteScroller.add_item(name .. "/" .. palette.name) end
     player_gui.PaletteScroller.selected_index = 1
-    player_gui.PaletteScrollerTitle = player_gui.heat_group_container.add {
+
+    player_gui.GroupsScrollerTitle = player_gui.heat_group_container.add {
         type = "label",
-        caption = "Управление группами"
+        caption = {"lbl.caption.GroupsScrollerTitle"} --"Управление группами"
     }
 
 end

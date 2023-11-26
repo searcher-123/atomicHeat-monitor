@@ -23,7 +23,9 @@ function EntityHeatCollector:new(heat_group_name, entities)
         --- @type EntityHeatDataColumn[]
         columns = columns,
         --- @type integer 
-        _record_count = 1
+        _record_count = 1,
+        -- @type integer. сохранять 1 тик из..
+        decimator=60
     }
 end
 
@@ -47,10 +49,12 @@ end
 --- то есть скипать тики, которые не нужно собирать данные.
 --- @param collector EntityHeatCollector
 function EntityHeatCollectorLogic.do_every_tick(collector, tick)
+    if (tick % collector.decimator ~=0 ) then return end
     game.print("heat group \"" .. collector.heat_group_name .. "\" is recording")
     for index, col in ipairs(collector.columns) do
         if col.entity.valid == false then goto continue end
-        col["tick " .. tick] = HeatMarkerLogic.calc_temperature_for_entity(col.entity)
+        --col["tick " .. tick] = HeatMarkerLogic.calc_temperature_for_entity(col.entity)
+        col["tick " .. tick] = col.entity.temperature
         ::continue::
     end
 end

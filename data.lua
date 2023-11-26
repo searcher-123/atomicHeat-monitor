@@ -9,7 +9,7 @@ data:extend(
             {
                 type = "shortcut",
                 name = "heat-monitor__shortcut",
-                localised_name = "Atomic heat monitor",
+                localised_name = {"shortcut.temp_tool"},--
 		associated_control_input = "ahm_pressed-create_group_hotkey",
                 action = "lua",
                 icon = {
@@ -23,8 +23,8 @@ data:extend(
                 type = "selection-tool",
                 name = "heat-monitor__selector__create_group",
 --                icon = "__base__/graphics/icons/heat-boiler.png",
-                icon = "__base__/graphics/icons/signal/signal_red.png",
-                icon_size = 64,
+                icon = "__base__/graphics/icons/nuclear-reactor.png",
+                icon_size = 32,
                 subgroup = "tool",
                 stack_size = 1,
                 stackable = false,

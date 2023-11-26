@@ -21,15 +21,7 @@ heat_palettes= {
 	        { range = 1000, low = { r = 200, g = 0, b = 0, a = 255 }, high = { r = 255, g = 0, b = 0, a = 255 } }
 	    }                   
 	},
-	[3]={name="rects_n",	    b_need_numbers = false, 	    b_need_rects = true, 
-	    ranges_rects = {--диапазаны для клеток
-	        --здесь от 0 до 500 будет градиент от low "синий" до high "почти серый"
-	        { range = 500, low = { r = 0, g = 0, b = 255, a = 0.2 }, high = { r = 200, g = 200, b = 200, a = 0.1 } },
-	        --здесь от 500 до 1000 будет градиент от low "почти белый" до high  "красный"
-	        { range = 1000, low = { r = 230, g = 230, b = 230, a = 0.1 }, high = { r = 255, g = 0, b = 0, a = 0.2 } }
-	    }                   
-	},
-	[4]={name="bombino_n",	  b_need_numbers = true,	  b_need_rects = false,
+	[3]={name="bombino_n",	  b_need_numbers = true,	  b_need_rects = false,
 	  ranges_numbers = {--диапазаны для клеток
         --здесь от 0 до 500 будет градиент от low "синий" до high "почти серый"
         { range = 500, low = { r = 0, g = 0, b = 255, a = 1 }, high = { r = 200, g = 200, b = 200, a = 1 } },
@@ -37,7 +29,7 @@ heat_palettes= {
         { range = 1000, low = { r = 230, g = 230, b = 230, a = 1 }, high = { r = 255, g = 0, b = 0, a = 1 } }
 	    }                   
 	},
-	[5]={name="rects_and_digits",	  b_need_numbers = true,	  b_need_rects = true,
+	[4]={name="rects_and_digits",	  b_need_numbers = true,	  b_need_rects = true,
 	  ranges_numbers = {--диапазаны для клеток
         { range = 1000, low = { r = 0, g = 255, b = 0, a = 1 }, high = { r = 0, g = 255, b = 0, a = 1 } }  } ,
 	    ranges_rects = {--диапазаны для клеток
@@ -46,7 +38,16 @@ heat_palettes= {
 	        --здесь от 500 до 1000 будет градиент от low "почти белый" до high  "красный"
 	        { range = 1000, low = { r = 230, g = 230, b = 230, a = 0.1 }, high = { r = 255, g = 0, b = 0, a = 0.2 } }
 	    }
-  	  }
+  	  },
+	[5]={name="rects_n",	    b_need_numbers = false, 	    b_need_rects = true, 
+	    ranges_rects = {--диапазаны для клеток
+	        --здесь от 0 до 500 будет градиент от low "синий" до high "почти серый"
+	        { range = 500, low = { r = 0, g = 0, b = 255, a = 0.2 }, high = { r = 200, g = 200, b = 200, a = 0.1 } },
+	        --здесь от 500 до 1000 будет градиент от low "почти белый" до high  "красный"
+	        { range = 1000, low = { r = 230, g = 230, b = 230, a = 0.1 }, high = { r = 255, g = 0, b = 0, a = 0.2 } }
+	    }                   
+	}
+
 	}
 
 
@@ -78,8 +79,8 @@ function set_palette ()
     --baggins()
 
     if PaletteNumber ~=nil then
-	log ("set_palette "..PaletteNumber)
-	log ("nAME "..heat_palettes[PaletteNumber].name)
+	--log ("set_palette "..PaletteNumber)
+	--log ("nAME "..heat_palettes[PaletteNumber].name)
 	heat_palette.b_need_numbers=heat_palettes[PaletteNumber].b_need_numbers
 	heat_palette.b_need_rects=heat_palettes[PaletteNumber].b_need_rects
 	heat_palette.ranges_rects=heat_palettes[PaletteNumber].ranges_rects
