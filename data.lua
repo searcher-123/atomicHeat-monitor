@@ -10,6 +10,7 @@ data:extend(
                 type = "shortcut",
                 name = "heat-monitor__shortcut",
                 localised_name = "Atomic heat monitor",
+		associated_control_input = "ahm_pressed-create_group_hotkey",
                 action = "lua",
                 icon = {
                     filename = "__base__/graphics/icons/nuclear-reactor.png",
