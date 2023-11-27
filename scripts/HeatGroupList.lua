@@ -6,7 +6,7 @@ HeatGroupList = {}
 function HeatGroupList:new()
     return {
         classname = "HeatGroupList",
-        content = {}, --- @type table @Map<heat_group_name : string, HeatGroup>
+        content = {}, --- @type table<string, HeatGroup> @Map<heat_group_name : string, HeatGroup>
         _next_elem_index = 1
     }
 end

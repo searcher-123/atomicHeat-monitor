@@ -3,6 +3,7 @@
 --- @field is_recording boolean
 --- @field columns EntityHeatDataColumn[]
 --- @field _record_count integer
+--- @field decimator integer охранять 1 тик из..
 EntityHeatCollector = {}
 
 --- @param heat_group_name string
@@ -16,16 +17,11 @@ function EntityHeatCollector:new(heat_group_name, entities)
     end
 
     return {
-        --- @type string
-        heat_group_name = heat_group_name,
-        --- @type boolean
-        is_recording = false,
-        --- @type EntityHeatDataColumn[]
-        columns = columns,
-        --- @type integer 
-        _record_count = 1,
-        -- @type integer. сохранять 1 тик из..
-        decimator=60
+        heat_group_name = heat_group_name,--- @type string
+        is_recording = false,--- @type boolean
+        columns = columns, --- @type EntityHeatDataColumn[]
+        _record_count = 1, --- @type integer 
+        decimator=60,  --- @type integer сохранять 1 тик из..
     }
 end
 
