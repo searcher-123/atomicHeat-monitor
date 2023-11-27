@@ -24,7 +24,7 @@ data:extend(
                 name = "heat-monitor__selector__create_group",
 --                icon = "__base__/graphics/icons/heat-boiler.png",
                 icon = "__base__/graphics/icons/nuclear-reactor.png",
-                icon_size = 32,
+                icon_size = 64,
                 subgroup = "tool",
                 stack_size = 1,
                 stackable = false,

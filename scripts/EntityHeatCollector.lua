@@ -17,39 +17,43 @@ function EntityHeatCollector:new(heat_group_name, entities)
     end
 
     return {
-        heat_group_name = heat_group_name,--- @type string
-        is_recording = false,--- @type boolean
+        heat_group_name = heat_group_name, --- @type string
+        is_recording = false, --- @type boolean
         columns = columns, --- @type EntityHeatDataColumn[]
         _record_count = 1, --- @type integer 
-        decimator=60,  --- @type integer сохранять 1 тик из..
+        decimator = 60 --- @type integer сохранять 1 тик из..
     }
 end
 
 EntityHeatCollectorLogic = {}
 
 --- @param collector EntityHeatCollector
-function EntityHeatCollectorLogic.start_record(collector)
-    game.print("heat group \"" .. collector.heat_group_name .. "\" start recording")
+--- @param player_name string
+function EntityHeatCollectorLogic.start_record(collector, player_name)
+    game.print('AHM: player: "' .. player_name .. '"' .. " - heat group: \"" .. collector.heat_group_name ..
+                   "\" - start recording")
     collector.is_recording = true
 end
 
 --- @param collector EntityHeatCollector
-function EntityHeatCollectorLogic.stop_record(collector)
-    game.print("heat group \"" .. collector.heat_group_name .. "\" stop recording")
+--- @param player_name string
+function EntityHeatCollectorLogic.stop_record(collector, player_name)
+    game.print('AHM: player: "' .. player_name .. '"' .. " - heat group: \"" .. collector.heat_group_name ..
+                   "\" - stop recording")
     if collector.is_recording == false then return end -- типа миссклик
     collector.is_recording = false
-    FileWriter.flush_to_file(collector)
+    FileWriter.flush_to_file(collector, player_name)
 end
 
 --- Примичание: тут можно реализовать настройку "собирать данные с интервалом в N тиков",
 --- то есть скипать тики, которые не нужно собирать данные.
 --- @param collector EntityHeatCollector
 function EntityHeatCollectorLogic.do_every_tick(collector, tick)
-    if (tick % collector.decimator ~=0 ) then return end
-    game.print("heat group \"" .. collector.heat_group_name .. "\" is recording")
+    if (tick % collector.decimator ~= 0) then return end
+    game.print("AHM: heat group \"" .. collector.heat_group_name .. "\" is recording")
     for index, col in ipairs(collector.columns) do
         if col.entity.valid == false then goto continue end
-        --col["tick " .. tick] = HeatMarkerLogic.calc_temperature_for_entity(col.entity)
+        -- col["tick " .. tick] = HeatMarkerLogic.calc_temperature_for_entity(col.entity)
         col["tick " .. tick] = col.entity.temperature
         ::continue::
     end
@@ -61,13 +65,15 @@ end
 FileWriter = {}
 
 --- @param collector EntityHeatCollector
-function FileWriter.flush_to_file(collector)
-    local player_name = "Lasteria"
-    local filename = 'ahm__' .. player_name .. '__' .. collector.heat_group_name .. '__#' .. collector._record_count ..
-                         '.csv'
+--- @param player_name string
+function FileWriter.flush_to_file(collector, player_name)
+    local world_seed = game.surfaces[1].map_gen_settings.seed
+    local filename = 'ahm__' .. player_name .. '__' .. world_seed .. '__' .. collector.heat_group_name .. '__#' ..
+                         collector._record_count .. '.csv'
     collector._record_count = collector._record_count + 1
 
-    game.print("heat group \"" .. collector.heat_group_name .. "\" " .. 'start write to file ' .. filename .. '"')
+    game.print('AHM: player: "' .. player_name .. '" - ' .. 'heat group: "' .. collector.heat_group_name .. '" - ' ..
+                   'start write to file: "' .. filename .. '"')
 
     local content_buffer = ""
     local line = ""
@@ -86,6 +92,8 @@ function FileWriter.flush_to_file(collector)
     end
 
     game.write_file(filename, content_buffer)
+    game.print('AHM: player: "' .. player_name .. '" - ' .. 'heat group: "' .. collector.heat_group_name .. '" - ' ..
+                   'stop write to file: "' .. filename .. '"')
 end
 
 --- @param point2D table {x : double, y : double}

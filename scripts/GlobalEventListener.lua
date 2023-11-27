@@ -66,6 +66,7 @@ function GlobalEventListener.do_on_gui_click(gui_event)
 
     local player_gui = GlobalTable.get_or_create_Gui(gui_event.player_index)
     local player_groups = GlobalTable.get_or_create_heat_group_list(gui_event.player_index)
+    local player_name = game.players[gui_event.player_index].name
     --вдруг нажато то, что не входит в группы
 --    if (nil==gui_event.element.tags) or (nil==gui_event.element.tags.group_name)  then return end
 
@@ -86,14 +87,14 @@ function GlobalEventListener.do_on_gui_click(gui_event)
         local recorder = player_groups.content[heat_group_name].recorder        
         recorder.decimator= player_gui.heat_group_container.ahm_heat__ReducerText_textfield.text
         
-        EntityHeatCollectorLogic.start_record(recorder)
+        EntityHeatCollectorLogic.start_record(recorder, player_name)
     elseif string.find(btn_name, "->stop_record") then
         local group_gui_element_name = "ahm__heat_group_root_#" .. heat_group_name        
         local recorder = player_groups.content[heat_group_name].recorder--
         local lbl_name=string.gsub(btn_name,"->stop_record","->label")
         --считать имя файла.
         recorder.heat_group_name=player_gui.heat_group_container[group_gui_element_name][lbl_name].text                
-        EntityHeatCollectorLogic.stop_record(recorder)
+        EntityHeatCollectorLogic.stop_record(recorder, player_name)
     end
 end
 
