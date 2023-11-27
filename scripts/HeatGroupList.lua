@@ -67,8 +67,8 @@ function HeatGroupStoreLogic.remove_entity_from_all_groups(heat_group_list, dele
         ::next_group::
     end
     for index, pair in ipairs(modify_heat_groups) do
-        local heat_group = pair[1]
-        local entity_unit_number = pair[2]
+        local heat_group = pair[1] --- @type HeatGroup
+        local entity_unit_number = pair[2] --- @type string
         HeatGroupLogic.remove_entity(heat_group, entity_unit_number)
     end
 end

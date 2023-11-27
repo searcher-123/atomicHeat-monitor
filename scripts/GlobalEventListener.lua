@@ -119,8 +119,8 @@ end
 
 --- https://lua-api.factorio.com/latest/events.html#on_player_selected_area
 function GlobalEventListener:do_on_player_selected_area(event, is_alt_select)
-    local player_index = event.player_index
-    local group_entities = event.entities
+    local player_index = event.player_index --- @type integer
+    local group_entities = event.entities --- @type LuaEntity
 
     --- если нету выбраных entity, но делать нечего
     if (#group_entities == 0) then return end
@@ -132,7 +132,9 @@ function GlobalEventListener:do_on_player_selected_area(event, is_alt_select)
         if (is_alt_select == false) then
             GlobalConroller.add_group_for_player(player_index, group_entities)
         else
-
+            for index, entity in ipairs(group_entities) do
+                HeatGroupStoreLogic.remove_entity_from_all_groups(heat_group_list, entity.unit_number)
+            end
         end
     elseif (event.item == "heat-monitor__selector__edit_group") then
         if (is_alt_select == false) then end
