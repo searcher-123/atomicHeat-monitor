@@ -1,5 +1,23 @@
 heat_palettes= {
-	[1]={name="baggins_n",
+	[1]={name="Faxir_n",	    b_need_numbers = true, 	    b_need_rects = false, --нужна ли подсветка клеток true / false
+	    ranges_numbers = {--диапазоны для чисел	
+	        --здесь от 0 до 500 будет градиент от low "синий" до high "почти серый"
+        	{ range = 500, low = { r = 0, g = 0, b = 255, a = 255 }, high = { r = 100, g = 200, b = 200, a = 255 } },
+	        --здесь от 500 до 950 будет градиент от low "почти белый" до high  "красный"
+        	{ range = 950, low = { r = 250, g = 250, b = 230, a = 255 }, high = { r = 200, g = 160, b = 0, a = 255 } },
+	        --здесь от 500 до 950 будет градиент от low "почти белый" до high  "красный"
+	        { range = 1000, low = { r = 200, g = 0, b = 0, a = 255 }, high = { r = 255, g = 0, b = 0, a = 255 } }
+	    }                   
+	},
+	[2]={name="bombino_n",	  b_need_numbers = true,	  b_need_rects = false,
+	  ranges_numbers = {--диапазаны для клеток
+        --здесь от 0 до 500 будет градиент от low "синий" до high "почти серый"
+        { range = 500, low = { r = 0, g = 0, b = 255, a = 1 }, high = { r = 200, g = 200, b = 200, a = 1 } },
+        --здесь от 500 до 1000 будет градиент от low "почти белый" до high  "красный"
+        { range = 1000, low = { r = 230, g = 230, b = 230, a = 1 }, high = { r = 255, g = 0, b = 0, a = 1 } }
+	    }                   
+	},
+	[3]={name="baggins_n",
 	    b_need_numbers = true, --нужны ли числа true / false
 	    b_need_rects = false, --нужна ли подсветка клеток true / false
 	    ranges_numbers = {--диапазоны для чисел
@@ -10,24 +28,6 @@ heat_palettes= {
 	        --здесь от предыдущей границы т.е. 500 до 1000 будет постоянный цвет т.к. low и high одинаковые, и это будет зеленый - т.к. компонента зеленого g=255, а остальные по нулям
         	{ range = 1000, low = { r = 0, g = 250, b = 0, a = 1 }, high = { r = 0, g = 250, b = 0, a = 1 } }
    		 }	        
-	},
-	[2]={name="Faxir_n",	    b_need_numbers = true, 	    b_need_rects = false, --нужна ли подсветка клеток true / false
-	    ranges_numbers = {--диапазоны для чисел	
-	        --здесь от 0 до 500 будет градиент от low "синий" до high "почти серый"
-        	{ range = 500, low = { r = 0, g = 0, b = 255, a = 255 }, high = { r = 100, g = 200, b = 200, a = 255 } },
-	        --здесь от 500 до 950 будет градиент от low "почти белый" до high  "красный"
-        	{ range = 950, low = { r = 250, g = 250, b = 230, a = 255 }, high = { r = 200, g = 160, b = 0, a = 255 } },
-	        --здесь от 500 до 950 будет градиент от low "почти белый" до high  "красный"
-	        { range = 1000, low = { r = 200, g = 0, b = 0, a = 255 }, high = { r = 255, g = 0, b = 0, a = 255 } }
-	    }                   
-	},
-	[3]={name="bombino_n",	  b_need_numbers = true,	  b_need_rects = false,
-	  ranges_numbers = {--диапазаны для клеток
-        --здесь от 0 до 500 будет градиент от low "синий" до high "почти серый"
-        { range = 500, low = { r = 0, g = 0, b = 255, a = 1 }, high = { r = 200, g = 200, b = 200, a = 1 } },
-        --здесь от 500 до 1000 будет градиент от low "почти белый" до high  "красный"
-        { range = 1000, low = { r = 230, g = 230, b = 230, a = 1 }, high = { r = 255, g = 0, b = 0, a = 1 } }
-	    }                   
 	},
 	[4]={name="rects_and_digits",	  b_need_numbers = true,	  b_need_rects = true,
 	  ranges_numbers = {--диапазаны для клеток
