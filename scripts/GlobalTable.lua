@@ -120,7 +120,6 @@ function GlobalTable.do_on_entity_destroyed(event)
 
     for player_index, player_heat_group_list in pairs(global.ahm.player_and_heat_group_list__array) do
         HeatGroupStoreLogic.remove_entity_from_all_groups(player_heat_group_list, event.unit_number)
-        -- HeatGroupStoreLogic.clear_empty_heat_groups(player_heat_group_list) -- todo impl
     end
 
     register[event.registration_number] = nil
