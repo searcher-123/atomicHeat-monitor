@@ -1,11 +1,11 @@
 {
   "name": "atomicHeat-monitor",
   "version": "0.0.11",
-  "factorio_version": "1.1.50",
-  "title": "atomicHeat-monitor",
-  "author": "Searcher_k,Lasterian",
-  "contact": "autominer@narod.ru",
-  "homepage": "http://autominer.narod.ru/",
+  "factorio_version": "1.1",
+  "title": "Atomic Heat Monitor",
+  "author": "Searcher_k, Lasterian",
+  "contact": "kuryu@list.ru",
+  "homepage": "-",
   "description": "Show entity's temperature",
-  "dependencies": ["? optional-mod"]
+  "dependencies": ["base >= 1.1.0"]
 }

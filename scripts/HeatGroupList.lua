@@ -72,3 +72,16 @@ function HeatGroupStoreLogic.remove_entity_from_all_groups(heat_group_list, dele
         HeatGroupLogic.remove_entity(heat_group, entity_unit_number)
     end
 end
+
+ -- todo impl
+-- --- @param heat_group_list HeatGroupList
+-- --- @param heat_group_name string
+-- --- @return boolean - былали удалена группа или нет
+-- function HeatGroupStoreLogic.clear_empty_heat_groups(heat_group_list)
+--     local heat_group = heat_group_list.content[heat_group_name]
+--     if (#heat_group.content > 0) then
+--         return false
+--     end
+    
+--     return true
+-- end
