@@ -89,11 +89,13 @@ function GlobalEventListener.do_on_gui_click(gui_event)
         EntityHeatCollectorLogic.start_record(recorder, player_name)
     elseif string.find(btn_name, "->stop_record") then
         local group_gui_element_name = "ahm__heat_group_root_#" .. heat_group_name
-        local recorder = player_groups.content[heat_group_name].recorder --
+        local heat_group = player_groups.content[heat_group_name]
+        local recorder = heat_group.recorder --
         local lbl_name = string.gsub(btn_name, "->stop_record", "->label")
         -- считать имя файла.
         recorder.heat_group_name = player_gui.heat_group_container[group_gui_element_name][lbl_name].text
         EntityHeatCollectorLogic.stop_record(recorder, player_name)
+        HeatGroupLogic.refresh_recorder(heat_group)
     end
 end
 

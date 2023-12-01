@@ -31,7 +31,7 @@ function HeatGroupLogic.add_entity(heat_group, entity)
     if entity.valid == false or entity.temperature == nil then return end
     local temperature = HeatMarker.calc_temperature_for_entity(entity)
     heat_group.content["" .. entity.unit_number] = HeatMarker:new(entity, temperature)
-        GlobalTable.register_entity_on_destory(entity)
+    GlobalTable.register_entity_on_destory(entity)
 end
 
 --- @param heat_group HeatGroup
@@ -67,14 +67,24 @@ function HeatGroupLogic.collect_all_entites_for_group(heat_group)
     local id_and_entity = {}
     for unit_number, heat_marker in pairs(heat_group.content) do
         -- local unit_number = heat_marker.lua_entity.unit_number
-        if id_and_entity[unit_number] == nil then
-            id_and_entity[unit_number] = heat_marker.lua_entity
-        end
+        if id_and_entity[unit_number] == nil then id_and_entity[unit_number] = heat_marker.lua_entity end
     end
+
     --- @type LuaEntity[]
     local rsl = {}
-    for unit_number, entity in pairs(id_and_entity) do
-        table.insert(rsl, entity)
-    end
+    for unit_number, entity in pairs(id_and_entity) do table.insert(rsl, entity) end
+    return rsl
+end
+
+--- @param heat_group HeatGroup
+function HeatGroupLogic.refresh_recorder(heat_group)
+    heat_group.recorder = EntityHeatCollectorLogic.copy(heat_group.recorder, HeatGroupLogic.get_entities(heat_group)) 
+end
+
+--- @param heat_group HeatGroup
+--- @return LuaEntity[]
+function HeatGroupLogic.get_entities(heat_group)
+    local rsl = {}
+    for unit_number, marker in pairs(heat_group.content) do table.insert(rsl, marker.lua_entity) end
     return rsl
 end

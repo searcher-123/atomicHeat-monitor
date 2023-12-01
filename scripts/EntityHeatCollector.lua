@@ -10,26 +10,34 @@ EntityHeatCollector = {}
 --- @param entities LuaEntity[]
 --- @return EntityHeatCollector
 function EntityHeatCollector:new(heat_group_name, entities)
-    --- @type table<EntityHeatDataColumn>
-    local columns = {}
-    for index, entity in ipairs(entities) do
-        if entity.valid == true then table.insert(columns, EntityHeatDataColumn:new(entity)) end
-    end
-
     return {
         heat_group_name = heat_group_name, --- @type string
         is_recording = false, --- @type boolean
-        columns = columns, --- @type EntityHeatDataColumn[]
+        columns = EntityHeatCollectorLogic.map_entities_to_columns(entities), --- @type EntityHeatDataColumn[]
         _record_count = 1, --- @type integer 
-        decimator = 60 --- @type integer сохранять 1 тик из..
+        decimator = 60, --- @type integer сохранять 1 тик из..
     }
 end
 
 EntityHeatCollectorLogic = {}
 
+--- @param recorder EntityHeatCollector
+--- @param entities LuaEntity[]
+--- @return EntityHeatCollector
+function EntityHeatCollectorLogic.copy(recorder, entities)
+    return {
+        heat_group_name = recorder.heat_group_name,
+        is_recording = recorder.is_recording,
+        columns = EntityHeatCollectorLogic.map_entities_to_columns(entities),
+        _record_count = recorder._record_count,
+        decimator = recorder.decimator,
+    }
+end
+
 --- @param collector EntityHeatCollector
 --- @param player_name string
 function EntityHeatCollectorLogic.start_record(collector, player_name)
+    if collector.is_recording == true then return end -- типа миссклик
     game.print('AHM: player: "' .. player_name .. '"' .. " - heat group: \"" .. collector.heat_group_name ..
                    "\" - start recording")
     collector.is_recording = true
@@ -59,6 +67,16 @@ function EntityHeatCollectorLogic.do_every_tick(collector, tick)
     end
 end
 
+--- @param entities LuaEntity[]
+--- @return table<EntityHeatDataColumn>
+function EntityHeatCollectorLogic.map_entities_to_columns(entities)
+    --- @type table<EntityHeatDataColumn>
+    local columns = {}
+    for index, entity in ipairs(entities) do
+        if entity.valid == true then table.insert(columns, EntityHeatDataColumn:new(entity)) end
+    end
+    return columns
+end
 -----------------------------------------------------------
 -----------------------------------------------------------
 -----------------------------------------------------------
